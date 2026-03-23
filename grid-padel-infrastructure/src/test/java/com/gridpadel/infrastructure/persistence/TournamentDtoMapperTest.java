@@ -18,7 +18,7 @@ class TournamentDtoMapperTest {
 
     private static TournamentDtoMapper createMapper() {
         SetResultDtoMapper setResultMapper = new SetResultDtoMapperImpl();
-        MatchResultDtoMapper matchResultMapper = new MatchResultDtoMapperImpl(setResultMapper);
+        MatchResultDtoMapper matchResultMapper = new MatchResultDtoMapper(setResultMapper);
         MatchDtoMapper matchMapper = new MatchDtoMapper(matchResultMapper);
         RoundDtoMapper roundMapper = new RoundDtoMapper(matchMapper);
         BracketDtoMapper bracketMapper = new BracketDtoMapper(roundMapper);
@@ -51,14 +51,16 @@ class TournamentDtoMapperTest {
         Tournament restored = mapper.fromDto(dto);
 
         assertThat(restored.pairs()).hasSize(2);
-        Pair restoredP1 = restored.pairs().stream()
-                .filter(p -> p.id().equals(p1.id())).findFirst().orElseThrow();
+        Pair restoredP1 = restored.pairs()
+                .find(p -> p.id().equals(p1.id()))
+                .getOrElseThrow(() -> new AssertionError("Expected pair"));
         assertThat(restoredP1.player1Name().value()).isEqualTo("Carlos");
         assertThat(restoredP1.player2Name().value()).isEqualTo("María");
         assertThat(restoredP1.seed()).contains(1);
 
-        Pair restoredP2 = restored.pairs().stream()
-                .filter(p -> p.id().equals(p2.id())).findFirst().orElseThrow();
+        Pair restoredP2 = restored.pairs()
+                .find(p -> p.id().equals(p2.id()))
+                .getOrElseThrow(() -> new AssertionError("Expected pair"));
         assertThat(restoredP2.isSeeded()).isFalse();
     }
 
@@ -91,9 +93,9 @@ class TournamentDtoMapperTest {
     @Test
     void shouldRoundTripMatchWithResult() {
         Tournament original = createTournamentWithBracket();
-        Match targetMatch = original.mainBracket().rounds().get(0).matches().stream()
-                .filter(m -> !m.isByeMatch() && m.isComplete())
-                .findFirst().orElseThrow();
+        Match targetMatch = original.mainBracket().rounds().get(0).matches()
+                .find(m -> !m.isByeMatch() && m.isComplete())
+                .getOrElseThrow(() -> new AssertionError("Expected playable match"));
 
         MatchResult result = MatchResult.of(SetResult.of(6, 3), SetResult.of(6, 4));
         targetMatch.recordResult(result);
@@ -101,9 +103,9 @@ class TournamentDtoMapperTest {
         TournamentDto dto = mapper.toDto(original);
         Tournament restored = mapper.fromDto(dto);
 
-        Match restoredMatch = restored.allMatches().stream()
-                .filter(m -> m.id().equals(targetMatch.id()))
-                .findFirst().orElseThrow();
+        Match restoredMatch = restored.allMatches()
+                .find(m -> m.id().equals(targetMatch.id()))
+                .getOrElseThrow(() -> new AssertionError("Expected match"));
         assertThat(restoredMatch.isPlayed()).isTrue();
         assertThat(restoredMatch.result().get().sets()).hasSize(2);
         assertThat(restoredMatch.result().get().sets().get(0).pair1Games()).isEqualTo(6);
@@ -115,9 +117,9 @@ class TournamentDtoMapperTest {
         Tournament original = createTournamentWithBracket();
         MatchAdvancementService advService = new MatchAdvancementService();
 
-        Match r1match = original.mainBracket().rounds().get(0).matches().stream()
-                .filter(m -> !m.isByeMatch() && m.isComplete())
-                .findFirst().orElseThrow();
+        Match r1match = original.mainBracket().rounds().get(0).matches()
+                .find(m -> !m.isByeMatch() && m.isComplete())
+                .getOrElseThrow(() -> new AssertionError("Expected playable match"));
 
         MatchResult result = MatchResult.of(SetResult.of(6, 3), SetResult.of(6, 4));
         advService.processMatchResult(original, r1match.id(), result);
@@ -126,9 +128,9 @@ class TournamentDtoMapperTest {
         Tournament restored = mapper.fromDto(dto);
 
         assertThat(restored.allMatches()).hasSameSizeAs(original.allMatches());
-        Match restoredR1 = restored.allMatches().stream()
-                .filter(m -> m.id().equals(r1match.id()))
-                .findFirst().orElseThrow();
+        Match restoredR1 = restored.allMatches()
+                .find(m -> m.id().equals(r1match.id()))
+                .getOrElseThrow(() -> new AssertionError("Expected match"));
         assertThat(restoredR1.isPlayed()).isTrue();
     }
 

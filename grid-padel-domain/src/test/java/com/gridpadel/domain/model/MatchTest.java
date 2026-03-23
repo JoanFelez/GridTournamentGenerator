@@ -62,7 +62,7 @@ class MatchTest {
     @Test
     void shouldStartWithNoResult() {
         Match match = Match.create(pair1(), pair2(), 1, 0, BracketType.MAIN);
-        assertThat(match.result()).isEmpty();
+        assertThat(match.result().isEmpty()).isTrue();
         assertThat(match.isPlayed()).isFalse();
     }
 
@@ -70,7 +70,7 @@ class MatchTest {
     void shouldRecordResult() {
         Match match = Match.create(pair1(), pair2(), 1, 0, BracketType.MAIN);
         match.recordResult(pair1WinsThreeSets());
-        assertThat(match.result()).isPresent();
+        assertThat(match.result().isDefined()).isTrue();
         assertThat(match.isPlayed()).isTrue();
     }
 
@@ -80,8 +80,8 @@ class MatchTest {
         Pair p2 = pair2();
         Match match = Match.create(p1, p2, 1, 0, BracketType.MAIN);
         match.recordResult(pair1Wins());
-        assertThat(match.winner()).isPresent().contains(p1);
-        assertThat(match.loser()).isPresent().contains(p2);
+        assertThat(match.winner().get()).isEqualTo(p1);
+        assertThat(match.loser().get()).isEqualTo(p2);
     }
 
     @Test
@@ -90,15 +90,15 @@ class MatchTest {
         Pair p2 = pair2();
         Match match = Match.create(p1, p2, 1, 0, BracketType.MAIN);
         match.recordResult(pair2Wins());
-        assertThat(match.winner()).isPresent().contains(p2);
-        assertThat(match.loser()).isPresent().contains(p1);
+        assertThat(match.winner().get()).isEqualTo(p2);
+        assertThat(match.loser().get()).isEqualTo(p1);
     }
 
     @Test
     void shouldAllowSettingLocationInAdvance() {
         Match match = Match.create(pair1(), pair2(), 1, 0, BracketType.MAIN);
         match.setLocation(Location.of("Pista Central"));
-        assertThat(match.location()).isPresent();
+        assertThat(match.location().isDefined()).isTrue();
         assertThat(match.location().get().value()).isEqualTo("Pista Central");
     }
 
@@ -107,7 +107,7 @@ class MatchTest {
         Match match = Match.create(pair1(), pair2(), 1, 0, BracketType.MAIN);
         LocalDateTime dt = LocalDateTime.of(2026, 5, 1, 10, 0);
         match.setDateTime(MatchDateTime.of(dt));
-        assertThat(match.dateTime()).isPresent();
+        assertThat(match.dateTime().isDefined()).isTrue();
     }
 
     @Test
@@ -115,7 +115,7 @@ class MatchTest {
         Match match = Match.create(pair1(), pair2(), 1, 0, BracketType.MAIN);
         match.setLocation(Location.of("Pista 1"));
         match.clearLocation();
-        assertThat(match.location()).isEmpty();
+        assertThat(match.location().isEmpty()).isTrue();
     }
 
     @Test
@@ -123,7 +123,7 @@ class MatchTest {
         Match match = Match.create(pair1(), pair2(), 1, 0, BracketType.MAIN);
         match.setDateTime(MatchDateTime.of(LocalDateTime.now()));
         match.clearDateTime();
-        assertThat(match.dateTime()).isEmpty();
+        assertThat(match.dateTime().isEmpty()).isTrue();
     }
 
     @Test
@@ -139,7 +139,7 @@ class MatchTest {
         Match match = Match.create(pair1(), pair2(), 1, 0, BracketType.MAIN);
         match.recordResult(pair1Wins());
         match.clearResult();
-        assertThat(match.result()).isEmpty();
+        assertThat(match.result().isEmpty()).isTrue();
         assertThat(match.isPlayed()).isFalse();
     }
 

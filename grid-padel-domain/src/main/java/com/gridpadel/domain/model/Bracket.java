@@ -1,21 +1,21 @@
 package com.gridpadel.domain.model;
 
 import com.gridpadel.domain.model.vo.BracketType;
-import lombok.AccessLevel;
+import io.vavr.collection.List;
+import io.vavr.control.Option;
 import lombok.Getter;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 @Getter
 public class Bracket {
 
     private final BracketType type;
-    @Getter(AccessLevel.NONE) private final List<Round> rounds;
+    private List<Round> rounds;
 
     private Bracket(BracketType type) {
         this.type = Objects.requireNonNull(type);
-        this.rounds = new ArrayList<>();
+        this.rounds = List.empty();
     }
 
     public static Bracket create(BracketType type) {
@@ -23,26 +23,22 @@ public class Bracket {
     }
 
     public List<Round> rounds() {
-        return Collections.unmodifiableList(rounds);
+        return rounds;
     }
 
     public void addRound(Round round) {
-        rounds.add(Objects.requireNonNull(round));
+        rounds = rounds.append(Objects.requireNonNull(round));
     }
 
-    public Optional<Round> round(int roundNumber) {
-        return rounds.stream()
-                .filter(r -> r.roundNumber() == roundNumber)
-                .findFirst();
+    public Option<Round> round(int roundNumber) {
+        return rounds.find(r -> r.roundNumber() == roundNumber);
     }
 
     public int totalMatches() {
-        return rounds.stream().mapToInt(Round::matchCount).sum();
+        return rounds.map(Round::matchCount).sum().intValue();
     }
 
     public List<Match> allMatches() {
-        return rounds.stream()
-                .flatMap(r -> r.matches().stream())
-                .collect(Collectors.toUnmodifiableList());
+        return rounds.flatMap(Round::matches);
     }
 }

@@ -1,12 +1,12 @@
 package com.gridpadel.domain.model;
 
 import com.gridpadel.domain.model.vo.*;
+import io.vavr.control.Option;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.AccessLevel;
 
 import java.util.Objects;
-import java.util.Optional;
 
 @Getter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
@@ -54,16 +54,16 @@ public class Match implements DomainEntity {
         return match;
     }
 
-    public Optional<Location> location() {
-        return Optional.ofNullable(location);
+    public Option<Location> location() {
+        return Option.of(location);
     }
 
-    public Optional<MatchDateTime> dateTime() {
-        return Optional.ofNullable(dateTime);
+    public Option<MatchDateTime> dateTime() {
+        return Option.of(dateTime);
     }
 
-    public Optional<MatchResult> result() {
-        return Optional.ofNullable(result);
+    public Option<MatchResult> result() {
+        return Option.of(result);
     }
 
     public boolean isPlayed() {
@@ -78,14 +78,12 @@ public class Match implements DomainEntity {
         return (pair1 != null && pair1.isBye()) || (pair2 != null && pair2.isBye());
     }
 
-    public Optional<Pair> winner() {
-        if (result == null) return Optional.empty();
-        return Optional.of(result.winnerPosition() == 1 ? pair1 : pair2);
+    public Option<Pair> winner() {
+        return Option.of(result).map(r -> r.winnerPosition() == 1 ? pair1 : pair2);
     }
 
-    public Optional<Pair> loser() {
-        if (result == null) return Optional.empty();
-        return Optional.of(result.loserPosition() == 1 ? pair1 : pair2);
+    public Option<Pair> loser() {
+        return Option.of(result).map(r -> r.loserPosition() == 1 ? pair1 : pair2);
     }
 
     public void recordResult(MatchResult result) {

@@ -2,9 +2,10 @@ package com.gridpadel.domain.service;
 
 import com.gridpadel.domain.model.*;
 import com.gridpadel.domain.model.vo.BracketType;
-
-import java.util.*;
-import java.util.stream.Collectors;
+import io.vavr.collection.Array;
+import io.vavr.collection.List;
+import io.vavr.collection.Set;
+import io.vavr.collection.LinkedHashSet;
 
 public class BracketGenerationService {
 
@@ -23,68 +24,64 @@ public class BracketGenerationService {
         int numMatches = drawSize / 2;
         int byeCount = drawSize - pairs.size();
 
-        List<Pair> seeded = pairs.stream()
+        List<Pair> seeded = pairs
                 .filter(Pair::isSeeded)
-                .sorted(Comparator.comparingInt(p -> p.seed().orElse(Integer.MAX_VALUE)))
-                .collect(Collectors.toCollection(ArrayList::new));
+                .sortBy(p -> p.seed().getOrElse(Integer.MAX_VALUE));
 
-        List<Pair> unseeded = pairs.stream()
-                .filter(p -> !p.isSeeded())
-                .collect(Collectors.toCollection(ArrayList::new));
+        List<Pair> unseeded = pairs.filter(p -> !p.isSeeded());
 
-        int[] seedMatchPositions = standardSeedMatchPositions(numMatches);
+        Array<Integer> seedPositions = Array.ofAll(standardSeedPositions(numMatches));
 
-        // Determine which match positions get BYEs (top seed positions first)
-        Set<Integer> byePositions = new LinkedHashSet<>();
-        for (int i = 0; i < byeCount && i < seedMatchPositions.length; i++) {
-            byePositions.add(seedMatchPositions[i]);
-        }
+        Set<Integer> byePositions = LinkedHashSet.ofAll(seedPositions.take(byeCount));
 
-        // Build R1 matches
+        // Build R1 matches using mutable array (positional placement)
         Match[] r1 = new Match[numMatches];
         int seedIdx = 0;
+        List<Pair> remainingUnseeded = unseeded;
 
         // Place seeded pairs at their standard positions
-        for (int i = 0; i < seedMatchPositions.length && seedIdx < seeded.size(); i++) {
-            int pos = seedMatchPositions[i];
+        for (int i = 0; i < seedPositions.size() && seedIdx < seeded.size(); i++) {
+            int pos = seedPositions.get(i);
             Pair seed = seeded.get(seedIdx++);
             if (byePositions.contains(pos)) {
                 r1[pos] = Match.create(seed, Pair.bye(), 1, pos, BracketType.MAIN);
             } else {
-                Pair opponent = unseeded.remove(unseeded.size() - 1);
+                Pair opponent = remainingUnseeded.last();
+                remainingUnseeded = remainingUnseeded.dropRight(1);
                 r1[pos] = Match.create(seed, opponent, 1, pos, BracketType.MAIN);
             }
         }
 
-        // BYE matches without seeds: pair unseeded pair with BYE
-        for (int pos : byePositions) {
+        // BYE matches without seeds
+        for (Integer pos : byePositions) {
             if (r1[pos] == null) {
-                Pair pair = unseeded.remove(0);
+                Pair pair = remainingUnseeded.head();
+                remainingUnseeded = remainingUnseeded.tail();
                 r1[pos] = Match.create(pair, Pair.bye(), 1, pos, BracketType.MAIN);
             }
         }
 
-        // Fill remaining matches with unseeded pairs
+        // Fill remaining with unseeded pairs
         for (int i = 0; i < numMatches; i++) {
             if (r1[i] == null) {
-                Pair p1 = unseeded.remove(0);
-                Pair p2 = unseeded.remove(0);
+                Pair p1 = remainingUnseeded.head();
+                remainingUnseeded = remainingUnseeded.tail();
+                Pair p2 = remainingUnseeded.head();
+                remainingUnseeded = remainingUnseeded.tail();
                 r1[i] = Match.create(p1, p2, 1, i, BracketType.MAIN);
             }
         }
 
         tournament.mainBracket().addRound(
-                Round.of(1, Arrays.asList(r1), BracketType.MAIN));
+                Round.of(1, java.util.Arrays.asList(r1), BracketType.MAIN));
 
         // Create subsequent rounds with empty matches
         int matchesInRound = numMatches / 2;
-        for (int round = 2; round <= totalRounds; round++) {
-            List<Match> matches = new ArrayList<>();
-            for (int pos = 0; pos < matchesInRound; pos++) {
-                matches.add(Match.createEmpty(round, pos, BracketType.MAIN));
-            }
-            tournament.mainBracket().addRound(
-                    Round.of(round, matches, BracketType.MAIN));
+        for (int roundNum = 2; roundNum <= totalRounds; roundNum++) {
+            final int rn = roundNum;
+            List<Match> matches = List.range(0, matchesInRound)
+                    .map(pos -> Match.createEmpty(rn, pos, BracketType.MAIN));
+            tournament.mainBracket().addRound(Round.of(roundNum, matches, BracketType.MAIN));
             matchesInRound /= 2;
         }
 
@@ -97,48 +94,42 @@ public class BracketGenerationService {
         Round r1 = bracket.rounds().get(0);
         Round r2 = bracket.rounds().get(1);
 
-        for (Match match : r1.matches()) {
-            if (match.isByeMatch()) {
-                Pair advancing = match.pair1().isBye() ? match.pair2() : match.pair1();
-                int nextPosition = match.position() / 2;
-                Match nextMatch = r2.matchAt(nextPosition);
+        r1.matches()
+                .filter(Match::isByeMatch)
+                .forEach(match -> {
+                    Pair advancing = match.pair1().isBye() ? match.pair2() : match.pair1();
+                    int nextPosition = match.position() / 2;
+                    Match nextMatch = r2.matchAt(nextPosition);
 
-                if (match.position() % 2 == 0) {
-                    nextMatch.setPair1(advancing);
-                } else {
-                    nextMatch.setPair2(advancing);
-                }
-            }
-        }
+                    if (match.position() % 2 == 0) {
+                        nextMatch.setPair1(advancing);
+                    } else {
+                        nextMatch.setPair2(advancing);
+                    }
+                });
     }
 
-    /**
-     * Standard seed match positions using BPP algorithm.
-     * Returns match positions in seed order (index 0 = seed 1's match, etc.)
-     */
-    int[] standardSeedMatchPositions(int numMatches) {
-        List<Integer> positions = new ArrayList<>();
-        positions.add(0);
+    Array<Integer> standardSeedPositions(int numMatches) {
+        List<Integer> positions = List.of(0);
 
         if (numMatches == 1) {
-            return new int[]{0};
+            return Array.of(0);
         }
 
-        positions.add(1);
+        positions = positions.append(1);
 
         int currentSize = 2;
         while (currentSize < numMatches) {
-            List<Integer> expanded = new ArrayList<>();
             int nextSize = currentSize * 2;
+            List<Integer> expanded = List.empty();
             for (int p : positions) {
-                expanded.add(p);
-                expanded.add(nextSize - 1 - p);
+                expanded = expanded.append(p).append(nextSize - 1 - p);
             }
             positions = expanded;
             currentSize = nextSize;
         }
 
-        return positions.stream().mapToInt(Integer::intValue).toArray();
+        return Array.ofAll(positions);
     }
 
     private int nextPowerOf2(int n) {

@@ -6,25 +6,31 @@ import com.gridpadel.ui.layout.BracketLayout;
 import com.gridpadel.ui.layout.BracketLayoutCalculator;
 import com.gridpadel.ui.layout.ConnectorLine;
 import com.gridpadel.ui.layout.MatchPosition;
+import io.vavr.collection.HashMap;
+import io.vavr.collection.Map;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Line;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.function.Consumer;
 
 public class BracketPane extends Pane {
 
     private final BracketLayoutCalculator layoutCalculator;
-    private final Map<String, MatchBoxView> matchBoxes = new HashMap<>();
+    private Map<String, MatchBoxView> matchBoxes = HashMap.empty();
+    private Consumer<Match> matchClickHandler;
 
     public BracketPane() {
         this.layoutCalculator = new BracketLayoutCalculator();
         getStyleClass().add("bracket-pane");
     }
 
+    public void setMatchClickHandler(Consumer<Match> handler) {
+        this.matchClickHandler = handler;
+    }
+
     public void renderTournament(Tournament tournament) {
         getChildren().clear();
-        matchBoxes.clear();
+        matchBoxes = HashMap.empty();
 
         if (tournament.mainBracket().rounds().isEmpty()) {
             return;
@@ -34,13 +40,16 @@ public class BracketPane extends Pane {
         Map<String, Match> matchLookup = buildMatchLookup(tournament);
 
         for (MatchPosition pos : layout.matchPositions()) {
-            Match match = matchLookup.get(pos.matchId());
+            Match match = matchLookup.getOrElse(pos.matchId(), (Match) null);
             if (match == null) continue;
 
             MatchBoxView box = new MatchBoxView(match);
             box.setLayoutX(pos.x());
             box.setLayoutY(pos.y());
-            matchBoxes.put(pos.matchId(), box);
+            if (matchClickHandler != null) {
+                box.setOnMatchClicked(matchClickHandler);
+            }
+            matchBoxes = matchBoxes.put(pos.matchId(), box);
             getChildren().add(box);
         }
 
@@ -55,9 +64,8 @@ public class BracketPane extends Pane {
     }
 
     private Map<String, Match> buildMatchLookup(Tournament tournament) {
-        Map<String, Match> lookup = new HashMap<>();
-        tournament.allMatches().forEach(m -> lookup.put(m.id().value(), m));
-        return lookup;
+        return tournament.allMatches()
+                .toMap(m -> io.vavr.Tuple.of(m.id().value(), m));
     }
 
     private void addBracketLabels(BracketLayout layout) {

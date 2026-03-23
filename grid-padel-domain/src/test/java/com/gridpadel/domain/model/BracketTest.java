@@ -3,8 +3,6 @@ package com.gridpadel.domain.model;
 import com.gridpadel.domain.model.vo.*;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.*;
 
 class BracketTest {
@@ -24,7 +22,7 @@ class BracketTest {
     void shouldAddRound() {
         Bracket bracket = Bracket.create(BracketType.MAIN);
         Match m = Match.create(pair("A", "B"), pair("C", "D"), 1, 0, BracketType.MAIN);
-        Round round = Round.of(1, List.of(m), BracketType.MAIN);
+        Round round = Round.of(1, BracketType.MAIN, m);
         bracket.addRound(round);
         assertThat(bracket.rounds()).hasSize(1);
     }
@@ -33,10 +31,10 @@ class BracketTest {
     void shouldReturnRoundByNumber() {
         Bracket bracket = Bracket.create(BracketType.MAIN);
         Match m = Match.create(pair("A", "B"), pair("C", "D"), 1, 0, BracketType.MAIN);
-        Round round = Round.of(1, List.of(m), BracketType.MAIN);
+        Round round = Round.of(1, BracketType.MAIN, m);
         bracket.addRound(round);
-        assertThat(bracket.round(1)).isPresent();
-        assertThat(bracket.round(2)).isEmpty();
+        assertThat(bracket.round(1).isDefined()).isTrue();
+        assertThat(bracket.round(2).isEmpty()).isTrue();
     }
 
     @Test
@@ -44,10 +42,10 @@ class BracketTest {
         Bracket bracket = Bracket.create(BracketType.MAIN);
         Match m1 = Match.create(pair("A", "B"), pair("C", "D"), 1, 0, BracketType.MAIN);
         Match m2 = Match.create(pair("E", "F"), pair("G", "H"), 1, 1, BracketType.MAIN);
-        bracket.addRound(Round.of(1, List.of(m1, m2), BracketType.MAIN));
+        bracket.addRound(Round.of(1, BracketType.MAIN, m1, m2));
 
         Match m3 = Match.createEmpty(2, 0, BracketType.MAIN);
-        bracket.addRound(Round.of(2, List.of(m3), BracketType.MAIN));
+        bracket.addRound(Round.of(2, BracketType.MAIN, m3));
 
         assertThat(bracket.totalMatches()).isEqualTo(3);
     }
@@ -56,7 +54,7 @@ class BracketTest {
     void shouldReturnAllMatches() {
         Bracket bracket = Bracket.create(BracketType.MAIN);
         Match m1 = Match.create(pair("A", "B"), pair("C", "D"), 1, 0, BracketType.MAIN);
-        bracket.addRound(Round.of(1, List.of(m1), BracketType.MAIN));
+        bracket.addRound(Round.of(1, BracketType.MAIN, m1));
 
         assertThat(bracket.allMatches()).hasSize(1).contains(m1);
     }

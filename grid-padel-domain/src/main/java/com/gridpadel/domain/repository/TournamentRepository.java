@@ -2,15 +2,14 @@ package com.gridpadel.domain.repository;
 
 import com.gridpadel.domain.model.Tournament;
 import com.gridpadel.domain.model.vo.TournamentId;
-
-import java.util.List;
-import java.util.Optional;
+import io.vavr.collection.List;
+import io.vavr.control.Option;
 
 public interface TournamentRepository {
 
     void save(Tournament tournament);
 
-    Optional<Tournament> findById(TournamentId id);
+    Option<Tournament> findById(TournamentId id);
 
     List<Tournament> findAll();
 

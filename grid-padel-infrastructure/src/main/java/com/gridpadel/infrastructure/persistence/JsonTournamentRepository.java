@@ -6,17 +6,16 @@ import com.gridpadel.domain.model.Tournament;
 import com.gridpadel.domain.model.vo.TournamentId;
 import com.gridpadel.domain.repository.TournamentRepository;
 import com.gridpadel.infrastructure.persistence.dto.TournamentDto;
+import io.vavr.collection.List;
+import io.vavr.control.Option;
+import io.vavr.control.Try;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 @Repository
 @RequiredArgsConstructor
@@ -37,51 +36,41 @@ public class JsonTournamentRepository implements TournamentRepository {
     public void save(Tournament tournament) {
         TournamentDto dto = mapper.toDto(tournament);
         Path file = tournamentFile(tournament.id());
-        try {
-            objectMapper.writeValue(file.toFile(), dto);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to save tournament: " + tournament.id().value(), e);
-        }
+        Try.run(() -> objectMapper.writeValue(file.toFile(), dto))
+                .getOrElseThrow(e -> new RuntimeException("Failed to save tournament: " + tournament.id().value(), e));
     }
 
     @Override
-    public Optional<Tournament> findById(TournamentId id) {
+    public Option<Tournament> findById(TournamentId id) {
         Path file = tournamentFile(id);
         if (!Files.exists(file)) {
-            return Optional.empty();
+            return Option.none();
         }
-        try {
-            TournamentDto dto = objectMapper.readValue(file.toFile(), TournamentDto.class);
-            return Optional.of(mapper.fromDto(dto));
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to load tournament: " + id.value(), e);
-        }
+        return Option.of(
+                Try.of(() -> objectMapper.readValue(file.toFile(), TournamentDto.class))
+                        .map(mapper::fromDto)
+                        .getOrElseThrow(e -> new RuntimeException("Failed to load tournament: " + id.value(), e))
+        );
     }
 
     @Override
     public List<Tournament> findAll() {
         Path dir = storagePath();
         if (!Files.exists(dir)) {
-            return List.of();
+            return List.empty();
         }
-        try (Stream<Path> files = Files.list(dir)) {
-            return files
-                    .filter(f -> f.toString().endsWith(".json"))
-                    .map(this::loadTournament)
-                    .toList();
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to list tournaments", e);
-        }
+        return Try.withResources(() -> Files.list(dir))
+                .of(files -> List.ofAll(files::iterator)
+                        .filter(f -> f.toString().endsWith(".json"))
+                        .map(this::loadTournament))
+                .getOrElseThrow(e -> new RuntimeException("Failed to list tournaments", e));
     }
 
     @Override
     public void delete(TournamentId id) {
         Path file = tournamentFile(id);
-        try {
-            Files.deleteIfExists(file);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to delete tournament: " + id.value(), e);
-        }
+        Try.run(() -> Files.deleteIfExists(file))
+                .getOrElseThrow(e -> new RuntimeException("Failed to delete tournament: " + id.value(), e));
     }
 
     private Path storagePath() {
@@ -93,19 +82,13 @@ public class JsonTournamentRepository implements TournamentRepository {
     }
 
     private Tournament loadTournament(Path file) {
-        try {
-            TournamentDto dto = objectMapper.readValue(file.toFile(), TournamentDto.class);
-            return mapper.fromDto(dto);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to load tournament from: " + file, e);
-        }
+        return Try.of(() -> objectMapper.readValue(file.toFile(), TournamentDto.class))
+                .map(mapper::fromDto)
+                .getOrElseThrow(e -> new RuntimeException("Failed to load tournament from: " + file, e));
     }
 
     private void ensureStorageDir() {
-        try {
-            Files.createDirectories(storagePath());
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to create storage directory: " + storageDir, e);
-        }
+        Try.run(() -> Files.createDirectories(storagePath()))
+                .getOrElseThrow(e -> new RuntimeException("Failed to create storage directory: " + storageDir, e));
     }
 }

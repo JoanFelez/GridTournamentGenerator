@@ -7,8 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.*;
 
 class BracketGenerationServiceTest {
@@ -77,19 +75,16 @@ class BracketGenerationServiceTest {
         service.generateMainBracket(t);
 
         Bracket main = t.mainBracket();
-        // 4 pairs → 2 rounds: R1 (2 matches), R2/Final (1 empty match)
         assertThat(main.rounds()).hasSize(2);
         assertThat(main.rounds().get(0).matchCount()).isEqualTo(2);
         assertThat(main.rounds().get(1).matchCount()).isEqualTo(1);
 
-        // R1 matches should have both pairs
         main.rounds().get(0).matches().forEach(m -> {
             assertThat(m.pair1()).isNotNull();
             assertThat(m.pair2()).isNotNull();
             assertThat(m.isByeMatch()).isFalse();
         });
 
-        // R2 match should be empty (waiting for R1 results)
         Match finalMatch = main.rounds().get(1).matches().get(0);
         assertThat(finalMatch.pair1()).isNull();
         assertThat(finalMatch.pair2()).isNull();
@@ -105,7 +100,6 @@ class BracketGenerationServiceTest {
         int expectedRounds = (int) (Math.log(count) / Math.log(2));
         assertThat(main.rounds()).hasSize(expectedRounds);
 
-        // R1 should have count/2 matches, none with BYEs
         Round r1 = main.rounds().get(0);
         assertThat(r1.matchCount()).isEqualTo(count / 2);
         r1.matches().forEach(m -> assertThat(m.isByeMatch()).isFalse());
@@ -119,12 +113,11 @@ class BracketGenerationServiceTest {
         service.generateMainBracket(t);
 
         Bracket main = t.mainBracket();
-        // 3 pairs → draw size 4 → 1 BYE → 2 rounds
         assertThat(main.rounds()).hasSize(2);
         Round r1 = main.rounds().get(0);
         assertThat(r1.matchCount()).isEqualTo(2);
 
-        long byeMatches = r1.matches().stream().filter(Match::isByeMatch).count();
+        int byeMatches = r1.matches().count(Match::isByeMatch);
         assertThat(byeMatches).isEqualTo(1);
     }
 
@@ -134,13 +127,11 @@ class BracketGenerationServiceTest {
         service.generateMainBracket(t);
 
         Round r1 = t.mainBracket().rounds().get(0);
-        Match byeMatch = r1.matches().stream()
-                .filter(Match::isByeMatch)
-                .findFirst().orElseThrow();
+        Match byeMatch = r1.matches()
+                .find(Match::isByeMatch)
+                .getOrElseThrow(() -> new AssertionError("No BYE match found"));
 
-        // BYE match should be auto-resolved: non-BYE pair advances
         assertThat(byeMatch.isPlayed()).isFalse();
-        // The non-BYE pair should be placed in next round
         Match r2Match = t.mainBracket().rounds().get(1).matches().get(0);
         boolean advancedToR2 = r2Match.pair1() != null || r2Match.pair2() != null;
         assertThat(advancedToR2).isTrue();
@@ -156,7 +147,7 @@ class BracketGenerationServiceTest {
         int expectedByes = drawSize - pairCount;
 
         Round r1 = t.mainBracket().rounds().get(0);
-        long byeMatches = r1.matches().stream().filter(Match::isByeMatch).count();
+        int byeMatches = r1.matches().count(Match::isByeMatch);
         assertThat(byeMatches).isEqualTo(expectedByes);
     }
 
@@ -168,11 +159,9 @@ class BracketGenerationServiceTest {
         service.generateMainBracket(t);
 
         Round r1 = t.mainBracket().rounds().get(0);
-        // Find matches containing seed 1 and seed 2
         Match seed1Match = findMatchWithSeed(r1, 1);
         Match seed2Match = findMatchWithSeed(r1, 2);
 
-        // They should be in opposite halves (different half of the draw)
         assertThat(seed1Match.position()).isNotEqualTo(seed2Match.position());
         int halfSize = r1.matchCount() / 2;
         boolean seed1InFirstHalf = seed1Match.position() < halfSize;
@@ -185,13 +174,10 @@ class BracketGenerationServiceTest {
         Tournament t = tournamentWithSeededPairs(6, 2);
         service.generateMainBracket(t);
 
-        // 6 pairs → draw size 8 → 2 BYEs → seeds 1 and 2 get BYEs
         Round r1 = t.mainBracket().rounds().get(0);
-        List<Match> byeMatches = r1.matches().stream()
-                .filter(Match::isByeMatch).toList();
+        io.vavr.collection.List<Match> byeMatches = r1.matches().filter(Match::isByeMatch);
 
         assertThat(byeMatches).hasSize(2);
-        // Both BYE matches should contain a seeded pair
         byeMatches.forEach(m -> {
             Pair nonBye = m.pair1().isBye() ? m.pair2() : m.pair1();
             assertThat(nonBye.isSeeded()).isTrue();
@@ -209,14 +195,13 @@ class BracketGenerationServiceTest {
         Match seed3Match = findMatchWithSeed(r1, 3);
         Match seed4Match = findMatchWithSeed(r1, 4);
 
-        // Seeds 1-4 should each be in a different quarter
         int quarterSize = r1.matchCount() / 4;
         int q1 = seed1Match.position() / quarterSize;
         int q2 = seed2Match.position() / quarterSize;
         int q3 = seed3Match.position() / quarterSize;
         int q4 = seed4Match.position() / quarterSize;
 
-        assertThat(List.of(q1, q2, q3, q4)).containsExactlyInAnyOrder(0, 1, 2, 3);
+        assertThat(java.util.List.of(q1, q2, q3, q4)).containsExactlyInAnyOrder(0, 1, 2, 3);
     }
 
     // --- Round structure ---
@@ -227,11 +212,11 @@ class BracketGenerationServiceTest {
         service.generateMainBracket(t);
 
         Bracket main = t.mainBracket();
-        assertThat(main.rounds()).hasSize(3); // 8→4→2→1
+        assertThat(main.rounds()).hasSize(3);
 
-        assertThat(main.rounds().get(0).matchCount()).isEqualTo(4); // R1
-        assertThat(main.rounds().get(1).matchCount()).isEqualTo(2); // R2
-        assertThat(main.rounds().get(2).matchCount()).isEqualTo(1); // Final
+        assertThat(main.rounds().get(0).matchCount()).isEqualTo(4);
+        assertThat(main.rounds().get(1).matchCount()).isEqualTo(2);
+        assertThat(main.rounds().get(2).matchCount()).isEqualTo(1);
     }
 
     @Test
@@ -288,20 +273,19 @@ class BracketGenerationServiceTest {
         service.generateMainBracket(t);
 
         Bracket main = t.mainBracket();
-        assertThat(main.rounds()).hasSize(5); // 32→16→8→4→2→1
+        assertThat(main.rounds()).hasSize(5);
         assertThat(main.rounds().get(0).matchCount()).isEqualTo(16);
     }
 
     // --- Helper ---
 
     private Match findMatchWithSeed(Round round, int seed) {
-        return round.matches().stream()
-                .filter(m -> hasSeed(m.pair1(), seed) || hasSeed(m.pair2(), seed))
-                .findFirst()
-                .orElseThrow(() -> new AssertionError("No match with seed " + seed));
+        return round.matches()
+                .find(m -> hasSeed(m.pair1(), seed) || hasSeed(m.pair2(), seed))
+                .getOrElseThrow(() -> new AssertionError("No match with seed " + seed));
     }
 
     private boolean hasSeed(Pair pair, int seed) {
-        return pair != null && !pair.isBye() && pair.isSeeded() && pair.seed().orElse(-1) == seed;
+        return pair != null && !pair.isBye() && pair.isSeeded() && pair.seed().getOrElse(-1) == seed;
     }
 }
