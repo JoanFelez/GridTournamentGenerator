@@ -1,5 +1,6 @@
 package com.gridpadel.application.service;
 
+import com.gridpadel.domain.exception.ValidationException;
 import com.gridpadel.domain.model.*;
 import com.gridpadel.domain.model.vo.*;
 import com.gridpadel.domain.repository.TournamentRepository;
@@ -49,7 +50,7 @@ class TournamentServiceTest {
     @Test
     void shouldRejectBlankTournamentName() {
         assertThatThrownBy(() -> service.createTournament("  "))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(ValidationException.class);
     }
 
     // --- Get / List ---
