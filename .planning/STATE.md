@@ -1,29 +1,24 @@
 # Project State
 
 ## Current Version: 0.0.1
-## Current Phase: 3 — Bracket Logic & Application Services
-## Status: IN REVIEW (PRs #7, #8)
+## Current Phase: 4 — UI Grid Rendering (JavaFX)
+## Status: IN REVIEW (PR #10)
 
 ## Completed Phases
 - **Phase 1:** Project Skeleton & Infrastructure ✅
 - **Phase 2:** Domain Model (DDD + TDD) ✅
-  - Value Objects: PairId, MatchId, TournamentId, PlayerName, Location, MatchDateTime, MatchResult, BracketType, SetResult
-  - Entities: Pair, Match, Round, Bracket
-  - Aggregate Root: Tournament (max 32 pairs, dual brackets, timestamps)
-  - Repository Port: TournamentRepository
-  - PRs: #1–#6 merged
+- **Phase 3:** Bracket Logic & Application Services ✅
+  - PRs: #7, #8 merged; #9 (error handling) open
 
-## Phase 3 Progress
-- **Domain Services** ✅ (PR #7 — feature/bracket-generation)
-  - BracketGenerationService: BPP seeding, BYE placement, auto-resolve
-  - MatchAdvancementService: winner advancement, consolation routing, result clearing
-- **Application & Infrastructure** ✅ (PR #8 — feature/application-services)
-  - TournamentService: all use cases (create, manage pairs, generate, record results, etc.)
-  - JsonTournamentRepository: file-based JSON persistence
-  - TournamentDtoMapper: full round-trip domain ↔ DTO
-  - InfrastructureConfig: Spring bean registration for domain services
-- **Tests:** 218 total (188 domain + 15 application + 15 infrastructure)
-- **Remaining:** BYE slot user override (REQ-03) — deferred to UI phase
+## Phase 4 Progress
+- **UI Grid Rendering** ✅ (PR #10 — feature/ui-grid-rendering)
+  - MatchBoxView: pair names, scores, location, datetime, visual states
+  - BracketLayoutCalculator: center R1, main→right, consolation→left
+  - BracketPane: match boxes + connector lines + bracket labels
+  - MainView: ScrollPane + zoom (Ctrl+scroll)
+  - CSS styling for all components
+  - Demo tournament on launch (6 pairs)
+- **Tests:** 228 total (188 domain + 15 application + 15 infrastructure + 10 UI)
 
 ## Git Workflow
 - **Main branch:** main (production)
