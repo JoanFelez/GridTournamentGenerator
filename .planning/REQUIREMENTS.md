@@ -22,6 +22,9 @@
 | REQ-16 | All tournament data is editable at any time (pairs, results, locations, dates) | Must |
 | REQ-17 | Tournament history: save, reopen, and modify past tournaments | Must |
 | REQ-18 | Persist tournaments to local storage (file-based) | Must |
+| REQ-19 | Pairs can be assigned a seed number (1, 2, 3...) | Must |
+| REQ-20 | Seeded pairs get favorable bracket placement (avoid meeting early) | Must |
+| REQ-21 | Top seeds may receive BYEs when pair count is not a power of 2 | Must |
 
 ## Non-Functional Requirements
 

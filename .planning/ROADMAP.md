@@ -48,7 +48,9 @@
 
 **Success Criteria:**
 - [ ] Bracket generation algorithm for 1–32 pairs
-- [ ] BYE slot selection by user
+- [ ] Seeded pairs placed to avoid early meetings (standard tournament seeding)
+- [ ] Top seeds receive BYEs when pair count is not a power of 2
+- [ ] BYE slot selection by user (can override automatic seeding)
 - [ ] Auto-advance winner when result entered
 - [ ] Losers from round 1 routed to consolation bracket
 - [ ] Second-loss elimination working
@@ -58,7 +60,7 @@
 - [ ] Tournament history listing (list saved tournaments)
 - [ ] Full TDD coverage
 
-**Covers:** REQ-02, REQ-03, REQ-04, REQ-09, REQ-10, REQ-11, REQ-16, REQ-17, REQ-18
+**Covers:** REQ-02, REQ-03, REQ-04, REQ-09, REQ-10, REQ-11, REQ-16, REQ-17, REQ-18, REQ-19, REQ-20, REQ-21
 
 ---
 
