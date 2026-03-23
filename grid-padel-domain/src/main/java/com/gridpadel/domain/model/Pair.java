@@ -4,6 +4,7 @@ import com.gridpadel.domain.model.vo.PairId;
 import com.gridpadel.domain.model.vo.PlayerName;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public class Pair implements DomainEntity {
 
@@ -11,24 +12,28 @@ public class Pair implements DomainEntity {
     private PlayerName player1Name;
     private PlayerName player2Name;
     private final boolean bye;
+    private Integer seed;
 
-    private Pair(PairId id, PlayerName player1Name, PlayerName player2Name, boolean bye) {
+    private Pair(PairId id, PlayerName player1Name, PlayerName player2Name, boolean bye, Integer seed) {
         this.id = Objects.requireNonNull(id);
-        this.player1Name = Objects.requireNonNull(player1Name);
-        this.player2Name = Objects.requireNonNull(player2Name);
+        this.player1Name = player1Name;
+        this.player2Name = player2Name;
         this.bye = bye;
+        this.seed = seed;
     }
 
     public static Pair create(PlayerName player1Name, PlayerName player2Name) {
-        return new Pair(PairId.generate(), player1Name, player2Name, false);
+        Objects.requireNonNull(player1Name, "Player 1 name is required");
+        Objects.requireNonNull(player2Name, "Player 2 name is required");
+        return new Pair(PairId.generate(), player1Name, player2Name, false, null);
     }
 
     public static Pair bye() {
-        return new Pair(PairId.generate(), PlayerName.of("BYE"), PlayerName.of("BYE"), true);
+        return new Pair(PairId.generate(), null, null, true, null);
     }
 
-    public static Pair restore(PairId id, PlayerName player1Name, PlayerName player2Name, boolean bye) {
-        return new Pair(id, player1Name, player2Name, bye);
+    public static Pair restore(PairId id, PlayerName player1Name, PlayerName player2Name, boolean bye, Integer seed) {
+        return new Pair(id, player1Name, player2Name, bye, seed);
     }
 
     public PairId id() {
@@ -36,10 +41,16 @@ public class Pair implements DomainEntity {
     }
 
     public PlayerName player1Name() {
+        if (bye) {
+            throw new IllegalStateException("BYE pair has no player data");
+        }
         return player1Name;
     }
 
     public PlayerName player2Name() {
+        if (bye) {
+            throw new IllegalStateException("BYE pair has no player data");
+        }
         return player2Name;
     }
 
@@ -47,8 +58,34 @@ public class Pair implements DomainEntity {
         return bye;
     }
 
+    public Optional<Integer> seed() {
+        return Optional.ofNullable(seed);
+    }
+
+    public boolean isSeeded() {
+        return seed != null;
+    }
+
     public String displayName() {
-        return player1Name.value() + " / " + player2Name.value();
+        if (bye) {
+            return "BYE";
+        }
+        String base = player1Name.value() + " / " + player2Name.value();
+        return seed != null ? "[" + seed + "] " + base : base;
+    }
+
+    public void assignSeed(int seedNumber) {
+        if (bye) {
+            throw new IllegalStateException("Cannot assign seed to a BYE pair");
+        }
+        if (seedNumber <= 0) {
+            throw new IllegalArgumentException("Seed must be a positive number");
+        }
+        this.seed = seedNumber;
+    }
+
+    public void removeSeed() {
+        this.seed = null;
     }
 
     public void updatePlayer1Name(PlayerName newName) {
