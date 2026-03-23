@@ -51,13 +51,28 @@ public class TournamentController {
 
     public void managePairs() {
         if (currentTournament == null) return;
-        PairManagementDialog.show(currentTournament.pairs().toJavaList()).ifPresent(entries ->
+        PairManagementDialog.show(currentTournament.pairs().toJavaList(), this::handleImport).ifPresent(entries ->
                 Try.run(() -> {
                     syncPairs(entries);
                     refreshTournament();
                     refreshDisplay();
                 }).onFailure(e -> showError("Error managing pairs", e.getMessage()))
         );
+    }
+
+    public void handleImport(java.io.File file) {
+        if (currentTournament == null) return;
+        String name = file.getName();
+        String ext = name.contains(".") ? name.substring(name.lastIndexOf('.') + 1) : "";
+
+        Try.withResources(() -> new java.io.FileInputStream(file))
+                .of(is -> tournamentService.importPairs(currentTournament.id(), is, ext))
+                .flatMap(result -> result)
+                .onSuccess(pairs -> {
+                    refreshTournament();
+                    showInfo("Import Successful", pairs.size() + " pair(s) imported from " + file.getName());
+                })
+                .onFailure(e -> showError("Import Error", e.getMessage()));
     }
 
     public void generateBracket() {

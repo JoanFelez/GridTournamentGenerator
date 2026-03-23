@@ -3,6 +3,7 @@ package com.gridpadel.application.service;
 import com.gridpadel.domain.exception.ValidationException;
 import com.gridpadel.domain.model.*;
 import com.gridpadel.domain.model.vo.*;
+import com.gridpadel.domain.port.PairImportPort;
 import com.gridpadel.domain.repository.TournamentRepository;
 import com.gridpadel.domain.service.BracketGenerationService;
 import com.gridpadel.domain.service.MatchAdvancementService;
@@ -14,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import io.vavr.collection.List;
 import io.vavr.control.Option;
+import io.vavr.control.Try;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -25,6 +27,9 @@ class TournamentServiceTest {
     @Mock
     private TournamentRepository repository;
 
+    @Mock
+    private PairImportPort csvImporter;
+
     private TournamentService service;
 
     @BeforeEach
@@ -32,7 +37,8 @@ class TournamentServiceTest {
         service = new TournamentService(
                 repository,
                 new BracketGenerationService(),
-                new MatchAdvancementService()
+                new MatchAdvancementService(),
+                java.util.List.of(csvImporter)
         );
     }
 
@@ -219,6 +225,38 @@ class TournamentServiceTest {
 
         assertThat(r1m0.dateTime().isDefined()).isTrue();
         verify(repository).save(t);
+    }
+
+    // --- Import pairs ---
+
+    @Test
+    void shouldImportPairsFromFile() {
+        Tournament t = Tournament.create("Test");
+        when(repository.findById(t.id())).thenReturn(Option.of(t));
+        when(csvImporter.supports("csv")).thenReturn(true);
+
+        List<PairImportPort.ImportedPair> imported = List.of(
+                new PairImportPort.ImportedPair("Alice", "Bob", null),
+                new PairImportPort.ImportedPair("Charlie", "Diana", 1)
+        );
+        when(csvImporter.importPairs(any())).thenReturn(Try.success(imported));
+
+        Try<List<Pair>> result = service.importPairs(t.id(), java.io.InputStream.nullInputStream(), "csv");
+
+        assertThat(result.isSuccess()).isTrue();
+        assertThat(result.get()).hasSize(2);
+        assertThat(t.pairs()).hasSize(2);
+        verify(repository).save(t);
+    }
+
+    @Test
+    void shouldRejectUnsupportedFileFormat() {
+        Tournament t = Tournament.create("Test");
+        when(csvImporter.supports("pdf")).thenReturn(false);
+
+        assertThatThrownBy(() -> service.importPairs(t.id(), java.io.InputStream.nullInputStream(), "pdf"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Unsupported file format");
     }
 
     // --- Helpers ---
