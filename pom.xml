@@ -28,7 +28,7 @@
         <mockito.version>5.15.2</mockito.version>
         <assertj.version>3.27.3</assertj.version>
         <testfx.version>4.0.18</testfx.version>
-        <lombok.version>1.18.36</lombok.version>
+        <lombok.version>1.18.38</lombok.version>
 
         <!-- Plugins -->
         <maven-compiler.version>3.13.0</maven-compiler.version>
