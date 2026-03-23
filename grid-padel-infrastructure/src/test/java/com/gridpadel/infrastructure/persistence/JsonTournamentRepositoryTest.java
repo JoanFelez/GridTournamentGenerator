@@ -32,6 +32,7 @@ class JsonTournamentRepositoryTest {
         objectMapper.registerModule(new JavaTimeModule());
         TournamentDtoMapper mapper = Mappers.getMapper(TournamentDtoMapper.class);
         repository = new JsonTournamentRepository(tempDir, objectMapper, mapper);
+        repository.init();
     }
 
     @Test

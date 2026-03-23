@@ -7,25 +7,19 @@ import com.gridpadel.domain.model.vo.*;
 import com.gridpadel.domain.repository.TournamentRepository;
 import com.gridpadel.domain.service.BracketGenerationService;
 import com.gridpadel.domain.service.MatchAdvancementService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class TournamentService implements ApplicationService {
 
     private final TournamentRepository repository;
     private final BracketGenerationService bracketGenerationService;
     private final MatchAdvancementService matchAdvancementService;
-
-    public TournamentService(TournamentRepository repository,
-                             BracketGenerationService bracketGenerationService,
-                             MatchAdvancementService matchAdvancementService) {
-        this.repository = repository;
-        this.bracketGenerationService = bracketGenerationService;
-        this.matchAdvancementService = matchAdvancementService;
-    }
 
     public Tournament createTournament(String name) {
         Tournament tournament = Tournament.create(name);

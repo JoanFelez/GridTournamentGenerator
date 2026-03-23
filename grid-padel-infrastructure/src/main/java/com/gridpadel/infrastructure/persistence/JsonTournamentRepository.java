@@ -6,6 +6,8 @@ import com.gridpadel.domain.model.Tournament;
 import com.gridpadel.domain.model.vo.TournamentId;
 import com.gridpadel.domain.repository.TournamentRepository;
 import com.gridpadel.infrastructure.persistence.dto.TournamentDto;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
@@ -29,17 +31,19 @@ public class JsonTournamentRepository implements TournamentRepository {
             TournamentDtoMapper mapper) {
         this.storageDir = Path.of(storageDir);
         this.objectMapper = objectMapper;
-        this.objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
         this.mapper = mapper;
-        ensureStorageDir();
     }
 
     // Package-private constructor for testing
     JsonTournamentRepository(Path storageDir, ObjectMapper objectMapper, TournamentDtoMapper mapper) {
         this.storageDir = storageDir;
         this.objectMapper = objectMapper;
-        this.objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
         this.mapper = mapper;
+    }
+
+    @PostConstruct
+    void init() {
+        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
         ensureStorageDir();
     }
 
