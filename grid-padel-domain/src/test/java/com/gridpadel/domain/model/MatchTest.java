@@ -17,6 +17,22 @@ class MatchTest {
         return Pair.create(PlayerName.of("Juan"), PlayerName.of("Ana"));
     }
 
+    private MatchResult pair1Wins() {
+        return MatchResult.of(SetResult.of(6, 3), SetResult.of(6, 4));
+    }
+
+    private MatchResult pair2Wins() {
+        return MatchResult.of(SetResult.of(3, 6), SetResult.of(4, 6));
+    }
+
+    private MatchResult pair1WinsThreeSets() {
+        return MatchResult.of(SetResult.of(6, 3), SetResult.of(4, 6), SetResult.of(6, 2));
+    }
+
+    private MatchResult pair2WinsThreeSets() {
+        return MatchResult.of(SetResult.of(6, 3), SetResult.of(4, 6), SetResult.of(2, 6));
+    }
+
     @Test
     void shouldCreateMatchWithTwoPairs() {
         Match match = Match.create(pair1(), pair2(), 1, 0, BracketType.MAIN);
@@ -53,8 +69,7 @@ class MatchTest {
     @Test
     void shouldRecordResult() {
         Match match = Match.create(pair1(), pair2(), 1, 0, BracketType.MAIN);
-        MatchResult result = MatchResult.of(2, 1);
-        match.recordResult(result);
+        match.recordResult(pair1WinsThreeSets());
         assertThat(match.result()).isPresent();
         assertThat(match.isPlayed()).isTrue();
     }
@@ -64,7 +79,7 @@ class MatchTest {
         Pair p1 = pair1();
         Pair p2 = pair2();
         Match match = Match.create(p1, p2, 1, 0, BracketType.MAIN);
-        match.recordResult(MatchResult.of(2, 0));
+        match.recordResult(pair1Wins());
         assertThat(match.winner()).isPresent().contains(p1);
         assertThat(match.loser()).isPresent().contains(p2);
     }
@@ -74,7 +89,7 @@ class MatchTest {
         Pair p1 = pair1();
         Pair p2 = pair2();
         Match match = Match.create(p1, p2, 1, 0, BracketType.MAIN);
-        match.recordResult(MatchResult.of(0, 2));
+        match.recordResult(pair2Wins());
         assertThat(match.winner()).isPresent().contains(p2);
         assertThat(match.loser()).isPresent().contains(p1);
     }
@@ -114,15 +129,15 @@ class MatchTest {
     @Test
     void shouldAllowUpdatingResult() {
         Match match = Match.create(pair1(), pair2(), 1, 0, BracketType.MAIN);
-        match.recordResult(MatchResult.of(2, 0));
-        match.recordResult(MatchResult.of(1, 2));
+        match.recordResult(pair1Wins());
+        match.recordResult(pair2WinsThreeSets());
         assertThat(match.result().get().winnerPosition()).isEqualTo(2);
     }
 
     @Test
     void shouldAllowClearingResult() {
         Match match = Match.create(pair1(), pair2(), 1, 0, BracketType.MAIN);
-        match.recordResult(MatchResult.of(2, 0));
+        match.recordResult(pair1Wins());
         match.clearResult();
         assertThat(match.result()).isEmpty();
         assertThat(match.isPlayed()).isFalse();

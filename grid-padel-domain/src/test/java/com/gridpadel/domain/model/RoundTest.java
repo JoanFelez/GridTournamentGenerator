@@ -49,7 +49,7 @@ class RoundTest {
         Round round = Round.of(1, List.of(m), BracketType.MAIN);
         assertThat(round.isComplete()).isFalse();
 
-        m.recordResult(MatchResult.of(2, 0));
+        m.recordResult(MatchResult.of(SetResult.of(6, 3), SetResult.of(6, 4)));
         assertThat(round.isComplete()).isTrue();
     }
 
