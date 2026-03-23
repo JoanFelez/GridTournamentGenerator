@@ -3,6 +3,7 @@ package com.gridpadel.domain.model;
 import com.gridpadel.domain.model.vo.PairId;
 import com.gridpadel.domain.model.vo.PlayerName;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -10,7 +11,7 @@ import java.util.Optional;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Pair implements DomainEntity {
 
-    @EqualsAndHashCode.Include
+    @Getter @EqualsAndHashCode.Include
     private final PairId id;
     private PlayerName player1Name;
     private PlayerName player2Name;
@@ -37,10 +38,6 @@ public class Pair implements DomainEntity {
 
     public static Pair restore(PairId id, PlayerName player1Name, PlayerName player2Name, boolean bye, Integer seed) {
         return new Pair(id, player1Name, player2Name, bye, seed);
-    }
-
-    public PairId id() {
-        return id;
     }
 
     public boolean isBye() {

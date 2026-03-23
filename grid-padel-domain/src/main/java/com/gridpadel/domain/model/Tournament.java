@@ -3,12 +3,15 @@ package com.gridpadel.domain.model;
 import com.gridpadel.domain.model.vo.BracketType;
 import com.gridpadel.domain.model.vo.PairId;
 import com.gridpadel.domain.model.vo.TournamentId;
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Stream;
 
+@Getter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Tournament implements DomainEntity {
 
@@ -17,7 +20,7 @@ public class Tournament implements DomainEntity {
     @EqualsAndHashCode.Include
     private final TournamentId id;
     private String name;
-    private final List<Pair> pairs;
+    @Getter(AccessLevel.NONE) private final List<Pair> pairs;
     private final Bracket mainBracket;
     private final Bracket consolationBracket;
     private final LocalDateTime createdAt;
@@ -57,36 +60,12 @@ public class Tournament implements DomainEntity {
         return new Tournament(id, name, pairs, mainBracket, consolationBracket, createdAt, updatedAt);
     }
 
-    public TournamentId id() {
-        return id;
-    }
-
-    public String name() {
-        return name;
-    }
-
     public List<Pair> pairs() {
         return Collections.unmodifiableList(pairs);
     }
 
     public int pairCount() {
         return pairs.size();
-    }
-
-    public Bracket mainBracket() {
-        return mainBracket;
-    }
-
-    public Bracket consolationBracket() {
-        return consolationBracket;
-    }
-
-    public LocalDateTime createdAt() {
-        return createdAt;
-    }
-
-    public LocalDateTime updatedAt() {
-        return updatedAt;
     }
 
     public void updateName(String newName) {

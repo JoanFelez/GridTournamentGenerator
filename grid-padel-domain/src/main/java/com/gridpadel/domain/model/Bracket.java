@@ -1,14 +1,17 @@
 package com.gridpadel.domain.model;
 
 import com.gridpadel.domain.model.vo.BracketType;
+import lombok.AccessLevel;
+import lombok.Getter;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Getter
 public class Bracket {
 
     private final BracketType type;
-    private final List<Round> rounds;
+    @Getter(AccessLevel.NONE) private final List<Round> rounds;
 
     private Bracket(BracketType type) {
         this.type = Objects.requireNonNull(type);
@@ -17,10 +20,6 @@ public class Bracket {
 
     public static Bracket create(BracketType type) {
         return new Bracket(type);
-    }
-
-    public BracketType type() {
-        return type;
     }
 
     public List<Round> rounds() {

@@ -1,13 +1,16 @@
 package com.gridpadel.domain.model;
 
 import com.gridpadel.domain.model.vo.BracketType;
+import lombok.AccessLevel;
+import lombok.Getter;
 
 import java.util.*;
 
+@Getter
 public class Round {
 
     private final int roundNumber;
-    private final List<Match> matches;
+    @Getter(AccessLevel.NONE) private final List<Match> matches;
     private final BracketType bracketType;
 
     private Round(int roundNumber, List<Match> matches, BracketType bracketType) {
@@ -23,16 +26,8 @@ public class Round {
         return new Round(roundNumber, matches, bracketType);
     }
 
-    public int roundNumber() {
-        return roundNumber;
-    }
-
     public List<Match> matches() {
         return Collections.unmodifiableList(matches);
-    }
-
-    public BracketType bracketType() {
-        return bracketType;
     }
 
     public Match matchAt(int position) {
