@@ -1,27 +1,58 @@
-# Maven
+# === Maven ===
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
 
-# IDE
+# === IDE ===
+# IntelliJ IDEA
 .idea/
 *.iml
 *.iws
+out/
+
+# Eclipse
 .project
 .classpath
 .settings/
+.factorypath
+bin/
+
+# VS Code
 .vscode/
+
+# NetBeans
+nb-configuration.xml
+nbproject/
+nbbuild/
+nbdist/
+
+# Editor swap/backup files
 *.swp
 *.swo
 *~
-.factorypath
+\#*\#
+.#*
 
-# OS
+# === OS ===
 .DS_Store
+.DS_Store?
+._*
 Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
 
-# Build
+# === Java / Build ===
 *.class
 *.jar
 *.war
@@ -33,13 +64,35 @@ Thumbs.db
 *.log
 hs_err_pid*
 replay_pid*
-
-# Java
 *.ctxt
 .mtj.tmp/
 
-# JavaFX
+# === JavaFX ===
 *.fxbuild
 
-# asdf
+# === Spring Boot ===
+spring-shell.log
+
+# === Lombok ===
+lombok.generated
+
+# === JaCoCo ===
+jacoco.exec
+
+# === jpackage / distribution ===
+dist/
+build/
+*.exe
+*.msi
+*.dmg
+*.deb
+*.rpm
+
+# === Application data (local dev) ===
+.gridpadel/
+
+# === asdf ===
 .tool-versions
+
+# === Copilot session state ===
+.copilot/
