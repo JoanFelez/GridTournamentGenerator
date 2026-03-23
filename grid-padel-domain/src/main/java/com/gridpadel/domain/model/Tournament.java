@@ -3,15 +3,18 @@ package com.gridpadel.domain.model;
 import com.gridpadel.domain.model.vo.BracketType;
 import com.gridpadel.domain.model.vo.PairId;
 import com.gridpadel.domain.model.vo.TournamentId;
+import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Stream;
 
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Tournament implements DomainEntity {
 
     public static final int MAX_PAIRS = 32;
 
+    @EqualsAndHashCode.Include
     private final TournamentId id;
     private String name;
     private final List<Pair> pairs;
@@ -112,22 +115,5 @@ public class Tournament implements DomainEntity {
                 mainBracket.allMatches().stream(),
                 consolationBracket.allMatches().stream()
         ).toList();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Tournament other)) return false;
-        return Objects.equals(id, other.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    @Override
-    public String toString() {
-        return "Tournament{" + name + ", pairs=" + pairs.size() + "}";
     }
 }
