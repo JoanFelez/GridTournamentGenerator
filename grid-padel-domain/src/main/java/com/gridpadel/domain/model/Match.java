@@ -2,10 +2,13 @@ package com.gridpadel.domain.model;
 
 import com.gridpadel.domain.model.vo.*;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.AccessLevel;
 
 import java.util.Objects;
 import java.util.Optional;
 
+@Getter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Match implements DomainEntity {
 
@@ -13,9 +16,9 @@ public class Match implements DomainEntity {
     private final MatchId id;
     private Pair pair1;
     private Pair pair2;
-    private Location location;
-    private MatchDateTime dateTime;
-    private MatchResult result;
+    @Getter(AccessLevel.NONE) private Location location;
+    @Getter(AccessLevel.NONE) private MatchDateTime dateTime;
+    @Getter(AccessLevel.NONE) private MatchResult result;
     private final int roundNumber;
     private final int position;
     private final BracketType bracketType;
@@ -51,18 +54,6 @@ public class Match implements DomainEntity {
         return match;
     }
 
-    public MatchId id() {
-        return id;
-    }
-
-    public Pair pair1() {
-        return pair1;
-    }
-
-    public Pair pair2() {
-        return pair2;
-    }
-
     public Optional<Location> location() {
         return Optional.ofNullable(location);
     }
@@ -73,18 +64,6 @@ public class Match implements DomainEntity {
 
     public Optional<MatchResult> result() {
         return Optional.ofNullable(result);
-    }
-
-    public int roundNumber() {
-        return roundNumber;
-    }
-
-    public int position() {
-        return position;
-    }
-
-    public BracketType bracketType() {
-        return bracketType;
     }
 
     public boolean isPlayed() {
