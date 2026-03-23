@@ -6,6 +6,7 @@ import com.gridpadel.domain.service.BracketGenerationService;
 import com.gridpadel.domain.service.MatchAdvancementService;
 import com.gridpadel.infrastructure.persistence.dto.TournamentDto;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 
 import java.time.LocalDateTime;
 
@@ -13,7 +14,7 @@ import static org.assertj.core.api.Assertions.*;
 
 class TournamentDtoMapperTest {
 
-    private final TournamentDtoMapper mapper = new TournamentDtoMapper();
+    private final TournamentDtoMapper mapper = Mappers.getMapper(TournamentDtoMapper.class);
 
     @Test
     void shouldRoundTripEmptyTournament() {

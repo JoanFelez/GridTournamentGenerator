@@ -3,25 +3,26 @@ package com.gridpadel.infrastructure.persistence;
 import com.gridpadel.domain.model.*;
 import com.gridpadel.domain.model.vo.*;
 import com.gridpadel.infrastructure.persistence.dto.*;
+import org.mapstruct.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
-public class TournamentDtoMapper {
+@Mapper(componentModel = "spring")
+public abstract class TournamentDtoMapper {
 
-    private static final DateTimeFormatter DT_FORMAT = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+    static final DateTimeFormatter DT_FORMAT = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+
+    // --- Tournament ---
 
     public TournamentDto toDto(Tournament tournament) {
-        Map<PairId, String> pairIdMap = buildPairIdMap(tournament);
-
         return new TournamentDto(
                 tournament.id().value(),
                 tournament.name(),
                 tournament.pairs().stream().map(this::toPairDto).toList(),
-                toBracketDto(tournament.mainBracket(), pairIdMap),
-                toBracketDto(tournament.consolationBracket(), pairIdMap),
+                toBracketDto(tournament.mainBracket()),
+                toBracketDto(tournament.consolationBracket()),
                 tournament.createdAt().format(DT_FORMAT),
                 tournament.updatedAt().format(DT_FORMAT)
         );
@@ -48,7 +49,9 @@ public class TournamentDtoMapper {
         );
     }
 
-    private PairDto toPairDto(Pair pair) {
+    // --- Pair ---
+
+    public PairDto toPairDto(Pair pair) {
         if (pair.isBye()) {
             return new PairDto(pair.id().value(), null, null, true, null);
         }
@@ -61,7 +64,7 @@ public class TournamentDtoMapper {
         );
     }
 
-    private Pair fromPairDto(PairDto dto) {
+    public Pair fromPairDto(PairDto dto) {
         if (dto.bye()) {
             return Pair.restore(PairId.of(dto.id()), null, null, true, null);
         }
@@ -74,26 +77,33 @@ public class TournamentDtoMapper {
         );
     }
 
-    private BracketDto toBracketDto(Bracket bracket, Map<PairId, String> pairIdMap) {
-        return new BracketDto(
-                bracket.type().name(),
-                bracket.rounds().stream()
-                        .map(r -> toRoundDto(r, pairIdMap))
-                        .toList()
+    // --- SetResult (MapStruct-generated) ---
+
+    @Mapping(target = "pair1Games", source = "pair1Games")
+    @Mapping(target = "pair2Games", source = "pair2Games")
+    public abstract SetResultDto toSetResultDto(SetResult setResult);
+
+    public SetResult fromSetResultDto(SetResultDto dto) {
+        return SetResult.of(dto.pair1Games(), dto.pair2Games());
+    }
+
+    // --- MatchResult ---
+
+    public MatchResultDto toMatchResultDto(MatchResult result) {
+        return new MatchResultDto(
+                result.sets().stream().map(this::toSetResultDto).toList()
         );
     }
 
-    private RoundDto toRoundDto(Round round, Map<PairId, String> pairIdMap) {
-        return new RoundDto(
-                round.roundNumber(),
-                round.bracketType().name(),
-                round.matches().stream()
-                        .map(m -> toMatchDto(m, pairIdMap))
-                        .toList()
+    public MatchResult fromMatchResultDto(MatchResultDto dto) {
+        return MatchResult.of(
+                dto.sets().stream().map(this::fromSetResultDto).toList()
         );
     }
 
-    private MatchDto toMatchDto(Match match, Map<PairId, String> pairIdMap) {
+    // --- Match ---
+
+    public MatchDto toMatchDto(Match match) {
         return new MatchDto(
                 match.id().value(),
                 match.pair1() != null ? match.pair1().id().value() : null,
@@ -107,32 +117,7 @@ public class TournamentDtoMapper {
         );
     }
 
-    private MatchResultDto toMatchResultDto(MatchResult result) {
-        return new MatchResultDto(
-                result.sets().stream()
-                        .map(s -> new SetResultDto(s.pair1Games(), s.pair2Games()))
-                        .toList()
-        );
-    }
-
-    private Bracket fromBracketDto(BracketDto dto, Map<String, Pair> pairLookup) {
-        BracketType type = BracketType.valueOf(dto.type());
-        Bracket bracket = Bracket.create(type);
-        for (RoundDto roundDto : dto.rounds()) {
-            bracket.addRound(fromRoundDto(roundDto, pairLookup));
-        }
-        return bracket;
-    }
-
-    private Round fromRoundDto(RoundDto dto, Map<String, Pair> pairLookup) {
-        BracketType type = BracketType.valueOf(dto.bracketType());
-        List<Match> matches = dto.matches().stream()
-                .map(m -> fromMatchDto(m, pairLookup))
-                .toList();
-        return Round.of(dto.roundNumber(), matches, type);
-    }
-
-    private Match fromMatchDto(MatchDto dto, Map<String, Pair> pairLookup) {
+    public Match fromMatchDto(MatchDto dto, @Context Map<String, Pair> pairLookup) {
         Pair pair1 = dto.pair1Id() != null ? pairLookup.get(dto.pair1Id()) : null;
         Pair pair2 = dto.pair2Id() != null ? pairLookup.get(dto.pair2Id()) : null;
 
@@ -151,36 +136,54 @@ public class TournamentDtoMapper {
         );
     }
 
-    private MatchResult fromMatchResultDto(MatchResultDto dto) {
-        List<SetResult> sets = dto.sets().stream()
-                .map(s -> SetResult.of(s.pair1Games(), s.pair2Games()))
+    // --- Round ---
+
+    public RoundDto toRoundDto(Round round) {
+        return new RoundDto(
+                round.roundNumber(),
+                round.bracketType().name(),
+                round.matches().stream().map(this::toMatchDto).toList()
+        );
+    }
+
+    public Round fromRoundDto(RoundDto dto, @Context Map<String, Pair> pairLookup) {
+        BracketType type = BracketType.valueOf(dto.bracketType());
+        List<Match> matches = dto.matches().stream()
+                .map(m -> fromMatchDto(m, pairLookup))
                 .toList();
-        return MatchResult.of(sets);
+        return Round.of(dto.roundNumber(), matches, type);
     }
 
-    private Map<PairId, String> buildPairIdMap(Tournament tournament) {
-        Map<PairId, String> map = new HashMap<>();
-        tournament.pairs().forEach(p -> map.put(p.id(), p.id().value()));
-        // Also collect pairs from bracket matches (BYE pairs, advanced pairs)
-        tournament.allMatches().forEach(m -> {
-            if (m.pair1() != null) map.put(m.pair1().id(), m.pair1().id().value());
-            if (m.pair2() != null) map.put(m.pair2().id(), m.pair2().id().value());
-        });
-        return map;
+    // --- Bracket ---
+
+    public BracketDto toBracketDto(Bracket bracket) {
+        return new BracketDto(
+                bracket.type().name(),
+                bracket.rounds().stream().map(this::toRoundDto).toList()
+        );
     }
 
-    private Map<String, Pair> buildPairLookup(List<Pair> pairs) {
+    public Bracket fromBracketDto(BracketDto dto, @Context Map<String, Pair> pairLookup) {
+        BracketType type = BracketType.valueOf(dto.type());
+        Bracket bracket = Bracket.create(type);
+        for (RoundDto roundDto : dto.rounds()) {
+            bracket.addRound(fromRoundDto(roundDto, pairLookup));
+        }
+        return bracket;
+    }
+
+    // --- Helpers ---
+
+    Map<String, Pair> buildPairLookup(List<Pair> pairs) {
         Map<String, Pair> lookup = new HashMap<>();
         pairs.forEach(p -> lookup.put(p.id().value(), p));
         return lookup;
     }
 
-    private void collectBracketPairs(BracketDto bracketDto, Map<String, Pair> pairLookup) {
-        // Pairs in bracket matches that aren't in the tournament pairs list (BYE pairs from generation)
+    void collectBracketPairs(BracketDto bracketDto, Map<String, Pair> pairLookup) {
         for (RoundDto round : bracketDto.rounds()) {
             for (MatchDto match : round.matches()) {
                 if (match.pair1Id() != null && !pairLookup.containsKey(match.pair1Id())) {
-                    // Must be a BYE pair — recreate it
                     Pair bye = Pair.restore(PairId.of(match.pair1Id()), null, null, true, null);
                     pairLookup.put(match.pair1Id(), bye);
                 }

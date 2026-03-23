@@ -22,6 +22,7 @@
         <spring-boot.version>3.4.3</spring-boot.version>
         <javafx.version>21.0.6</javafx.version>
         <openpdf.version>2.0.3</openpdf.version>
+        <mapstruct.version>1.6.3</mapstruct.version>
 
         <!-- Testing -->
         <junit.version>5.11.4</junit.version>
@@ -101,6 +102,19 @@
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
                 <version>${lombok.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <!-- MapStruct -->
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct</artifactId>
+                <version>${mapstruct.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct-processor</artifactId>
+                <version>${mapstruct.version}</version>
                 <scope>provided</scope>
             </dependency>
 

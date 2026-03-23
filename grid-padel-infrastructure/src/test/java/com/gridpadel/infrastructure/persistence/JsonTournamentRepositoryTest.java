@@ -11,6 +11,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import org.mapstruct.factory.Mappers;
+
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
@@ -28,7 +30,8 @@ class JsonTournamentRepositoryTest {
     void setUp() {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
-        repository = new JsonTournamentRepository(tempDir, objectMapper, new TournamentDtoMapper());
+        TournamentDtoMapper mapper = Mappers.getMapper(TournamentDtoMapper.class);
+        repository = new JsonTournamentRepository(tempDir, objectMapper, mapper);
     }
 
     @Test

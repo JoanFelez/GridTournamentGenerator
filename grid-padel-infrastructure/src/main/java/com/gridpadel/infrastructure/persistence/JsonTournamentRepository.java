@@ -25,11 +25,12 @@ public class JsonTournamentRepository implements TournamentRepository {
 
     public JsonTournamentRepository(
             @Value("${gridpadel.storage.dir:#{systemProperties['user.home'] + '/.gridpadel/tournaments'}}") String storageDir,
-            ObjectMapper objectMapper) {
+            ObjectMapper objectMapper,
+            TournamentDtoMapper mapper) {
         this.storageDir = Path.of(storageDir);
         this.objectMapper = objectMapper;
         this.objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-        this.mapper = new TournamentDtoMapper();
+        this.mapper = mapper;
         ensureStorageDir();
     }
 
