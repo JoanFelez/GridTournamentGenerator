@@ -11,7 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import org.mapstruct.factory.Mappers;
+import com.gridpadel.infrastructure.persistence.mapper.*;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -30,9 +30,19 @@ class JsonTournamentRepositoryTest {
     void setUp() {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
-        TournamentDtoMapper mapper = Mappers.getMapper(TournamentDtoMapper.class);
+        TournamentDtoMapper mapper = createMapper();
         repository = new JsonTournamentRepository(tempDir.toString(), objectMapper, mapper);
         repository.init();
+    }
+
+    private static TournamentDtoMapper createMapper() {
+        SetResultDtoMapper setResultMapper = new SetResultDtoMapperImpl();
+        MatchResultDtoMapper matchResultMapper = new MatchResultDtoMapper(setResultMapper);
+        MatchDtoMapper matchMapper = new MatchDtoMapper(matchResultMapper);
+        RoundDtoMapper roundMapper = new RoundDtoMapper(matchMapper);
+        BracketDtoMapper bracketMapper = new BracketDtoMapper(roundMapper);
+        PairDtoMapper pairMapper = new PairDtoMapper();
+        return new TournamentDtoMapper(pairMapper, bracketMapper);
     }
 
     @Test
