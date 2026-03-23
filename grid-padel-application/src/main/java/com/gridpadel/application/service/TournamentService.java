@@ -29,7 +29,7 @@ public class TournamentService implements ApplicationService {
 
     public Tournament getTournament(TournamentId id) {
         return repository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Tournament not found: " + id.value()));
+                .getOrElseThrow(() -> new IllegalArgumentException("Tournament not found: " + id.value()));
     }
 
     public List<Tournament> listTournaments() {
@@ -102,9 +102,8 @@ public class TournamentService implements ApplicationService {
     }
 
     private Match findMatch(Tournament tournament, MatchId matchId) {
-        return tournament.allMatches().stream()
-                .filter(m -> m.id().equals(matchId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Match not found: " + matchId.value()));
+        return io.vavr.collection.List.ofAll(tournament.allMatches())
+                .find(m -> m.id().equals(matchId))
+                .getOrElseThrow(() -> new IllegalArgumentException("Match not found: " + matchId.value()));
     }
 }

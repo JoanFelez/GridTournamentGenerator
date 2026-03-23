@@ -302,6 +302,6 @@ class BracketGenerationServiceTest {
     }
 
     private boolean hasSeed(Pair pair, int seed) {
-        return pair != null && !pair.isBye() && pair.isSeeded() && pair.seed().orElse(-1) == seed;
+        return pair != null && !pair.isBye() && pair.isSeeded() && pair.seed().getOrElse(-1) == seed;
     }
 }

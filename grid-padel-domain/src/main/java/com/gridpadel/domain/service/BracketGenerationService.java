@@ -25,7 +25,7 @@ public class BracketGenerationService {
 
         List<Pair> seeded = pairs.stream()
                 .filter(Pair::isSeeded)
-                .sorted(Comparator.comparingInt(p -> p.seed().orElse(Integer.MAX_VALUE)))
+                .sorted(Comparator.comparingInt(p -> p.seed().getOrElse(Integer.MAX_VALUE)))
                 .collect(Collectors.toCollection(ArrayList::new));
 
         List<Pair> unseeded = pairs.stream()

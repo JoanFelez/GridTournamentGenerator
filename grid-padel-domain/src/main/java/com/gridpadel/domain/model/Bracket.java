@@ -1,6 +1,7 @@
 package com.gridpadel.domain.model;
 
 import com.gridpadel.domain.model.vo.BracketType;
+import io.vavr.control.Option;
 import lombok.AccessLevel;
 import lombok.Getter;
 
@@ -30,10 +31,10 @@ public class Bracket {
         rounds.add(Objects.requireNonNull(round));
     }
 
-    public Optional<Round> round(int roundNumber) {
-        return rounds.stream()
+    public Option<Round> round(int roundNumber) {
+        return Option.ofOptional(rounds.stream()
                 .filter(r -> r.roundNumber() == roundNumber)
-                .findFirst();
+                .findFirst());
     }
 
     public int totalMatches() {

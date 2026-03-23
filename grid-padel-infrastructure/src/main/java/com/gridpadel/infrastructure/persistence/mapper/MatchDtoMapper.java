@@ -24,9 +24,9 @@ public class MatchDtoMapper {
                 match.id().value(),
                 match.pair1() != null ? match.pair1().id().value() : null,
                 match.pair2() != null ? match.pair2().id().value() : null,
-                match.location().map(Location::value).orElse(null),
-                match.dateTime().map(dt -> dt.value().format(DT_FORMAT)).orElse(null),
-                match.result().map(matchResultDtoMapper::toDto).orElse(null),
+                match.location().map(Location::value).getOrNull(),
+                match.dateTime().map(dt -> dt.value().format(DT_FORMAT)).getOrNull(),
+                match.result().map(matchResultDtoMapper::toDto).getOrNull(),
                 match.roundNumber(),
                 match.position(),
                 match.bracketType().name()

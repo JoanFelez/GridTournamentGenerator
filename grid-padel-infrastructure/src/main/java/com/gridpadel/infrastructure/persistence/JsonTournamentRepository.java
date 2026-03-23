@@ -6,6 +6,8 @@ import com.gridpadel.domain.model.Tournament;
 import com.gridpadel.domain.model.vo.TournamentId;
 import com.gridpadel.domain.repository.TournamentRepository;
 import com.gridpadel.infrastructure.persistence.dto.TournamentDto;
+import io.vavr.control.Option;
+import io.vavr.control.Try;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,7 +17,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 @Repository
@@ -37,25 +38,21 @@ public class JsonTournamentRepository implements TournamentRepository {
     public void save(Tournament tournament) {
         TournamentDto dto = mapper.toDto(tournament);
         Path file = tournamentFile(tournament.id());
-        try {
-            objectMapper.writeValue(file.toFile(), dto);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to save tournament: " + tournament.id().value(), e);
-        }
+        Try.run(() -> objectMapper.writeValue(file.toFile(), dto))
+                .getOrElseThrow(e -> new RuntimeException("Failed to save tournament: " + tournament.id().value(), e));
     }
 
     @Override
-    public Optional<Tournament> findById(TournamentId id) {
+    public Option<Tournament> findById(TournamentId id) {
         Path file = tournamentFile(id);
         if (!Files.exists(file)) {
-            return Optional.empty();
+            return Option.none();
         }
-        try {
-            TournamentDto dto = objectMapper.readValue(file.toFile(), TournamentDto.class);
-            return Optional.of(mapper.fromDto(dto));
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to load tournament: " + id.value(), e);
-        }
+        return Option.of(
+                Try.of(() -> objectMapper.readValue(file.toFile(), TournamentDto.class))
+                        .map(mapper::fromDto)
+                        .getOrElseThrow(e -> new RuntimeException("Failed to load tournament: " + id.value(), e))
+        );
     }
 
     @Override

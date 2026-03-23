@@ -110,7 +110,7 @@ public class MatchBoxView extends VBox {
         if (!match.isPlayed()) return false;
         return match.winner()
                 .map(w -> isPair1 ? w.equals(match.pair1()) : w.equals(match.pair2()))
-                .orElse(false);
+                .getOrElse(false);
     }
 
     private String buildScoreText(boolean isPair1) {
@@ -120,13 +120,13 @@ public class MatchBoxView extends VBox {
                                 ? String.valueOf(s.pair1Games())
                                 : String.valueOf(s.pair2Games()))
                         .collect(Collectors.joining(" ")))
-                .orElse("");
+                .getOrElse("");
     }
 
     private String buildDetailsText() {
         StringBuilder sb = new StringBuilder();
-        match.location().ifPresent(loc -> sb.append("📍 ").append(loc.value()));
-        match.dateTime().ifPresent(dt -> {
+        match.location().forEach(loc -> sb.append("📍 ").append(loc.value()));
+        match.dateTime().forEach(dt -> {
             if (!sb.isEmpty()) sb.append("  ");
             sb.append("📅 ").append(dt.value().format(DATE_FMT));
         });

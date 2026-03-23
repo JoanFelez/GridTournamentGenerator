@@ -15,7 +15,7 @@ import com.gridpadel.infrastructure.persistence.mapper.*;
 
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Optional;
+import io.vavr.control.Option;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -52,16 +52,16 @@ class JsonTournamentRepositoryTest {
 
         repository.save(tournament);
 
-        Optional<Tournament> loaded = repository.findById(tournament.id());
-        assertThat(loaded).isPresent();
+        Option<Tournament> loaded = repository.findById(tournament.id());
+        assertThat(loaded.isDefined()).isTrue();
         assertThat(loaded.get().name()).isEqualTo("Test");
         assertThat(loaded.get().pairs()).hasSize(1);
     }
 
     @Test
     void shouldReturnEmptyWhenNotFound() {
-        Optional<Tournament> result = repository.findById(TournamentId.generate());
-        assertThat(result).isEmpty();
+        Option<Tournament> result = repository.findById(TournamentId.generate());
+        assertThat(result.isEmpty()).isTrue();
     }
 
     @Test
@@ -78,10 +78,10 @@ class JsonTournamentRepositoryTest {
     void shouldDeleteTournament() {
         Tournament tournament = Tournament.create("ToDelete");
         repository.save(tournament);
-        assertThat(repository.findById(tournament.id())).isPresent();
+        assertThat(repository.findById(tournament.id()).isDefined()).isTrue();
 
         repository.delete(tournament.id());
-        assertThat(repository.findById(tournament.id())).isEmpty();
+        assertThat(repository.findById(tournament.id()).isEmpty()).isTrue();
     }
 
     @Test
@@ -92,7 +92,7 @@ class JsonTournamentRepositoryTest {
         tournament.updateName("Updated");
         repository.save(tournament);
 
-        Tournament loaded = repository.findById(tournament.id()).orElseThrow();
+        Tournament loaded = repository.findById(tournament.id()).getOrElseThrow(() -> new AssertionError("Expected tournament"));
         assertThat(loaded.name()).isEqualTo("Updated");
     }
 
@@ -107,7 +107,7 @@ class JsonTournamentRepositoryTest {
 
         repository.save(tournament);
 
-        Tournament loaded = repository.findById(tournament.id()).orElseThrow();
+        Tournament loaded = repository.findById(tournament.id()).getOrElseThrow(() -> new AssertionError("Expected tournament"));
         assertThat(loaded.mainBracket().rounds()).isNotEmpty();
         assertThat(loaded.allMatches()).hasSameSizeAs(tournament.allMatches());
     }
@@ -115,7 +115,7 @@ class JsonTournamentRepositoryTest {
     @Test
     void shouldReturnEmptyListWhenNoFiles() {
         List<Tournament> result = repository.findAll();
-        assertThat(result).isEmpty();
+        assertThat(result.isEmpty()).isTrue();
     }
 
     @Test

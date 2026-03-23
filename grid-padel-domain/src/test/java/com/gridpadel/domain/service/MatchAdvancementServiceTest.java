@@ -80,7 +80,7 @@ class MatchAdvancementServiceTest {
         advancementService.processMatchResult(t, r1m0.id(), pair1WinsResult());
 
         assertThat(r1m0.isPlayed()).isTrue();
-        assertThat(r1m0.result()).isPresent();
+        assertThat(r1m0.result().isDefined()).isTrue();
     }
 
     // --- Consolation bracket routing ---
@@ -141,7 +141,8 @@ class MatchAdvancementServiceTest {
         advancementService.processMatchResult(t, consolationMatch.id(), pair1WinsResult());
 
         // The loser of consolation match has lost twice → eliminated (no further advancement)
-        Pair consolationLoser = consolationMatch.loser().orElseThrow();
+        Pair consolationLoser = consolationMatch.loser().getOrElseThrow(() ->
+                new AssertionError("Expected loser"));
         // No more matches for this pair in any bracket
         boolean hasMoreMatches = t.allMatches().stream()
                 .filter(m -> !m.isPlayed())
@@ -170,7 +171,7 @@ class MatchAdvancementServiceTest {
         assertThat(mainFinal.pair2()).isEqualTo(mainWinner2);
 
         advancementService.processMatchResult(t, mainFinal.id(), pair1WinsResult());
-        assertThat(mainFinal.winner()).isPresent().contains(mainWinner1);
+        assertThat(mainFinal.winner().get()).isEqualTo(mainWinner1);
 
         // Consolation match
         Match consolation = t.consolationBracket().rounds().get(0).matchAt(0);

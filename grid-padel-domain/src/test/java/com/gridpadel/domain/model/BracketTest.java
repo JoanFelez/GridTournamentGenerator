@@ -35,8 +35,8 @@ class BracketTest {
         Match m = Match.create(pair("A", "B"), pair("C", "D"), 1, 0, BracketType.MAIN);
         Round round = Round.of(1, List.of(m), BracketType.MAIN);
         bracket.addRound(round);
-        assertThat(bracket.round(1)).isPresent();
-        assertThat(bracket.round(2)).isEmpty();
+        assertThat(bracket.round(1).isDefined()).isTrue();
+        assertThat(bracket.round(2).isEmpty()).isTrue();
     }
 
     @Test

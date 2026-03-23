@@ -22,6 +22,7 @@
         <javafx.version>21.0.6</javafx.version>
         <openpdf.version>2.0.3</openpdf.version>
         <mapstruct.version>1.6.3</mapstruct.version>
+        <vavr.version>0.10.5</vavr.version>
 
         <!-- Testing -->
         <junit.version>5.11.4</junit.version>
@@ -115,6 +116,13 @@
                 <artifactId>mapstruct-processor</artifactId>
                 <version>${mapstruct.version}</version>
                 <scope>provided</scope>
+            </dependency>
+
+            <!-- VAVR -->
+            <dependency>
+                <groupId>io.vavr</groupId>
+                <artifactId>vavr</artifactId>
+                <version>${vavr.version}</version>
             </dependency>
 
             <!-- Testing -->

@@ -13,7 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
-import java.util.Optional;
+import io.vavr.control.Option;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -58,7 +58,7 @@ class TournamentServiceTest {
     @Test
     void shouldGetTournamentById() {
         Tournament t = Tournament.create("Test");
-        when(repository.findById(t.id())).thenReturn(Optional.of(t));
+        when(repository.findById(t.id())).thenReturn(Option.of(t));
 
         Tournament found = service.getTournament(t.id());
         assertThat(found).isEqualTo(t);
@@ -67,7 +67,7 @@ class TournamentServiceTest {
     @Test
     void shouldThrowWhenTournamentNotFound() {
         TournamentId id = TournamentId.generate();
-        when(repository.findById(id)).thenReturn(Optional.empty());
+        when(repository.findById(id)).thenReturn(Option.none());
 
         assertThatThrownBy(() -> service.getTournament(id))
                 .isInstanceOf(IllegalArgumentException.class);
@@ -90,7 +90,7 @@ class TournamentServiceTest {
     @Test
     void shouldAddPairToTournament() {
         Tournament t = Tournament.create("Test");
-        when(repository.findById(t.id())).thenReturn(Optional.of(t));
+        when(repository.findById(t.id())).thenReturn(Option.of(t));
 
         Pair pair = service.addPair(t.id(), "Carlos", "María");
 
@@ -103,7 +103,7 @@ class TournamentServiceTest {
     @Test
     void shouldAddSeededPair() {
         Tournament t = Tournament.create("Test");
-        when(repository.findById(t.id())).thenReturn(Optional.of(t));
+        when(repository.findById(t.id())).thenReturn(Option.of(t));
 
         Pair pair = service.addSeededPair(t.id(), "Carlos", "María", 1);
 
@@ -117,7 +117,7 @@ class TournamentServiceTest {
         Tournament t = Tournament.create("Test");
         Pair pair = Pair.create(PlayerName.of("Carlos"), PlayerName.of("María"));
         t.addPair(pair);
-        when(repository.findById(t.id())).thenReturn(Optional.of(t));
+        when(repository.findById(t.id())).thenReturn(Option.of(t));
 
         service.removePair(t.id(), pair.id());
 
@@ -132,7 +132,7 @@ class TournamentServiceTest {
         Tournament t = Tournament.create("Test");
         t.addPair(Pair.create(PlayerName.of("A"), PlayerName.of("B")));
         t.addPair(Pair.create(PlayerName.of("C"), PlayerName.of("D")));
-        when(repository.findById(t.id())).thenReturn(Optional.of(t));
+        when(repository.findById(t.id())).thenReturn(Option.of(t));
 
         service.generateBracket(t.id());
 
@@ -145,7 +145,7 @@ class TournamentServiceTest {
     @Test
     void shouldRecordMatchResult() {
         Tournament t = createTournamentWithBracket();
-        when(repository.findById(t.id())).thenReturn(Optional.of(t));
+        when(repository.findById(t.id())).thenReturn(Option.of(t));
 
         Match r1m0 = t.mainBracket().rounds().get(0).matchAt(0);
         MatchResult result = MatchResult.of(SetResult.of(6, 3), SetResult.of(6, 4));
@@ -159,7 +159,7 @@ class TournamentServiceTest {
     @Test
     void shouldClearMatchResult() {
         Tournament t = createTournamentWithBracket();
-        when(repository.findById(t.id())).thenReturn(Optional.of(t));
+        when(repository.findById(t.id())).thenReturn(Option.of(t));
 
         Match r1m0 = t.mainBracket().rounds().get(0).matchAt(0);
         MatchResult result = MatchResult.of(SetResult.of(6, 3), SetResult.of(6, 4));
@@ -176,7 +176,7 @@ class TournamentServiceTest {
     @Test
     void shouldUpdateTournamentName() {
         Tournament t = Tournament.create("Old");
-        when(repository.findById(t.id())).thenReturn(Optional.of(t));
+        when(repository.findById(t.id())).thenReturn(Option.of(t));
 
         service.updateTournamentName(t.id(), "New Name");
 
@@ -198,12 +198,12 @@ class TournamentServiceTest {
     @Test
     void shouldSetMatchLocation() {
         Tournament t = createTournamentWithBracket();
-        when(repository.findById(t.id())).thenReturn(Optional.of(t));
+        when(repository.findById(t.id())).thenReturn(Option.of(t));
 
         Match r1m0 = t.mainBracket().rounds().get(0).matchAt(0);
         service.setMatchLocation(t.id(), r1m0.id(), "Pista Central");
 
-        assertThat(r1m0.location()).isPresent();
+        assertThat(r1m0.location().isDefined()).isTrue();
         assertThat(r1m0.location().get().value()).isEqualTo("Pista Central");
         verify(repository).save(t);
     }
@@ -211,13 +211,13 @@ class TournamentServiceTest {
     @Test
     void shouldSetMatchDateTime() {
         Tournament t = createTournamentWithBracket();
-        when(repository.findById(t.id())).thenReturn(Optional.of(t));
+        when(repository.findById(t.id())).thenReturn(Option.of(t));
 
         Match r1m0 = t.mainBracket().rounds().get(0).matchAt(0);
         java.time.LocalDateTime dt = java.time.LocalDateTime.of(2026, 5, 1, 10, 0);
         service.setMatchDateTime(t.id(), r1m0.id(), dt);
 
-        assertThat(r1m0.dateTime()).isPresent();
+        assertThat(r1m0.dateTime().isDefined()).isTrue();
         verify(repository).save(t);
     }
 
