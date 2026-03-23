@@ -1,9 +1,12 @@
 package com.gridpadel.ui;
 
+import com.gridpadel.domain.model.Pair;
+import com.gridpadel.domain.model.Tournament;
+import com.gridpadel.domain.model.vo.PlayerName;
+import com.gridpadel.domain.service.BracketGenerationService;
+import com.gridpadel.ui.view.MainView;
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -21,11 +24,12 @@ public class GridPadelApplication extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        Label placeholder = new Label("Grid Padel Tournament Generator v0.0.1");
-        placeholder.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
+        MainView mainView = new MainView();
 
-        StackPane root = new StackPane(placeholder);
-        Scene scene = new Scene(root, 1024, 768);
+        Tournament demo = createDemoTournament();
+        mainView.displayTournament(demo);
+
+        Scene scene = new Scene(mainView, 1280, 800);
 
         primaryStage.setTitle("Grid Padel Tournament Generator");
         primaryStage.setScene(scene);
@@ -39,5 +43,23 @@ public class GridPadelApplication extends Application {
         if (springContext != null) {
             springContext.close();
         }
+    }
+
+    private Tournament createDemoTournament() {
+        Tournament tournament = Tournament.create("Demo Tournament");
+        tournament.addPair(Pair.create(PlayerName.of("Carlos"), PlayerName.of("María")));
+        tournament.addPair(Pair.create(PlayerName.of("Juan"), PlayerName.of("Ana")));
+        tournament.addPair(Pair.create(PlayerName.of("Pedro"), PlayerName.of("Laura")));
+        tournament.addPair(Pair.create(PlayerName.of("Luis"), PlayerName.of("Elena")));
+        tournament.addPair(Pair.create(PlayerName.of("Miguel"), PlayerName.of("Sara")));
+        tournament.addPair(Pair.create(PlayerName.of("David"), PlayerName.of("Lucía")));
+
+        Pair seed1 = tournament.pairs().get(0);
+        seed1.assignSeed(1);
+        Pair seed2 = tournament.pairs().get(1);
+        seed2.assignSeed(2);
+
+        new BracketGenerationService().generateMainBracket(tournament);
+        return tournament;
     }
 }

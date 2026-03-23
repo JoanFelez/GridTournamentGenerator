@@ -1,0 +1,111 @@
+/* === Bracket Pane === */
+.bracket-pane {
+    -fx-background-color: #f5f5f5;
+}
+
+/* === Match Box === */
+.match-box {
+    -fx-background-color: white;
+    -fx-border-color: #333333;
+    -fx-border-width: 1.5;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 3, 0, 1, 1);
+}
+
+.match-bye {
+    -fx-background-color: #e8e8e8;
+    -fx-border-color: #999999;
+    -fx-border-style: dashed;
+    -fx-opacity: 0.7;
+}
+
+.match-played {
+    -fx-border-color: #2e7d32;
+    -fx-border-width: 2;
+}
+
+.match-ready {
+    -fx-border-color: #1565c0;
+}
+
+.match-pending {
+    -fx-border-color: #9e9e9e;
+}
+
+/* === Pair Name === */
+.pair-name {
+    -fx-font-size: 12px;
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-text-fill: #333333;
+}
+
+.pair-winner {
+    -fx-font-weight: bold;
+    -fx-text-fill: #2e7d32;
+}
+
+/* === Score === */
+.match-score {
+    -fx-font-size: 11px;
+    -fx-font-family: "Consolas", monospace;
+    -fx-text-fill: #555555;
+}
+
+/* === Separator === */
+.match-separator {
+    -fx-background-color: #cccccc;
+}
+
+/* === Details === */
+.match-details {
+    -fx-font-size: 9px;
+    -fx-text-fill: #777777;
+}
+
+/* === Connector Lines === */
+.connector-line {
+    -fx-stroke: #666666;
+    -fx-stroke-width: 1.5;
+}
+
+/* === Bracket Labels === */
+.bracket-label {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #555555;
+}
+
+.bracket-label-main {
+    -fx-text-fill: #1565c0;
+}
+
+.bracket-label-consolation {
+    -fx-text-fill: #c62828;
+}
+
+/* === Toolbar === */
+.toolbar {
+    -fx-background-color: #263238;
+    -fx-alignment: center-left;
+}
+
+.toolbar-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+.toolbar-hint {
+    -fx-font-size: 11px;
+    -fx-text-fill: #90a4ae;
+}
+
+/* === Scroll Pane === */
+.bracket-scroll {
+    -fx-background: #f5f5f5;
+}
+
+.bracket-scroll .viewport {
+    -fx-background-color: #f5f5f5;
+}
