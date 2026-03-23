@@ -2,12 +2,15 @@ package com.gridpadel.domain.model;
 
 import com.gridpadel.domain.model.vo.PairId;
 import com.gridpadel.domain.model.vo.PlayerName;
+import lombok.EqualsAndHashCode;
 
 import java.util.Objects;
 import java.util.Optional;
 
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Pair implements DomainEntity {
 
+    @EqualsAndHashCode.Include
     private final PairId id;
     private PlayerName player1Name;
     private PlayerName player2Name;
@@ -40,6 +43,10 @@ public class Pair implements DomainEntity {
         return id;
     }
 
+    public boolean isBye() {
+        return bye;
+    }
+
     public PlayerName player1Name() {
         if (bye) {
             throw new IllegalStateException("BYE pair has no player data");
@@ -52,10 +59,6 @@ public class Pair implements DomainEntity {
             throw new IllegalStateException("BYE pair has no player data");
         }
         return player2Name;
-    }
-
-    public boolean isBye() {
-        return bye;
     }
 
     public Optional<Integer> seed() {
@@ -100,22 +103,5 @@ public class Pair implements DomainEntity {
             throw new IllegalStateException("Cannot update player names on a BYE pair");
         }
         this.player2Name = Objects.requireNonNull(newName);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Pair other)) return false;
-        return Objects.equals(id, other.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    @Override
-    public String toString() {
-        return "Pair{" + displayName() + (bye ? " [BYE]" : "") + "}";
     }
 }

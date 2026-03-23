@@ -1,12 +1,15 @@
 package com.gridpadel.domain.model;
 
 import com.gridpadel.domain.model.vo.*;
+import lombok.EqualsAndHashCode;
 
 import java.util.Objects;
 import java.util.Optional;
 
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Match implements DomainEntity {
 
+    @EqualsAndHashCode.Include
     private final MatchId id;
     private Pair pair1;
     private Pair pair2;
@@ -136,24 +139,5 @@ public class Match implements DomainEntity {
 
     public void setPair2(Pair pair) {
         this.pair2 = pair;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Match other)) return false;
-        return Objects.equals(id, other.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    @Override
-    public String toString() {
-        String p1 = pair1 != null ? pair1.displayName() : "TBD";
-        String p2 = pair2 != null ? pair2.displayName() : "TBD";
-        return "Match{R" + roundNumber + "P" + position + " " + p1 + " vs " + p2 + "}";
     }
 }

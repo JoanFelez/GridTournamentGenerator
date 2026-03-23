@@ -28,6 +28,7 @@
         <mockito.version>5.15.2</mockito.version>
         <assertj.version>3.27.3</assertj.version>
         <testfx.version>4.0.18</testfx.version>
+        <lombok.version>1.18.36</lombok.version>
 
         <!-- Plugins -->
         <maven-compiler.version>3.13.0</maven-compiler.version>
@@ -93,6 +94,14 @@
                 <groupId>com.github.librepdf</groupId>
                 <artifactId>openpdf</artifactId>
                 <version>${openpdf.version}</version>
+            </dependency>
+
+            <!-- Lombok -->
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+                <scope>provided</scope>
             </dependency>
 
             <!-- Testing -->
