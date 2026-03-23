@@ -1,5 +1,7 @@
 package com.gridpadel.domain.model;
 
+import com.gridpadel.domain.exception.DomainException;
+
 import com.gridpadel.domain.model.vo.*;
 import org.junit.jupiter.api.Test;
 
@@ -27,13 +29,13 @@ class RoundTest {
     @Test
     void shouldRejectEmptyMatchList() {
         assertThatThrownBy(() -> Round.of(1, List.of(), BracketType.MAIN))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(DomainException.class);
     }
 
     @Test
     void shouldRejectNullMatchList() {
         assertThatThrownBy(() -> Round.of(1, null, BracketType.MAIN))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(DomainException.class);
     }
 
     @Test

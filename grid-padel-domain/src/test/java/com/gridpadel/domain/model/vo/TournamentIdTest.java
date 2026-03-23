@@ -1,5 +1,7 @@
 package com.gridpadel.domain.model.vo;
 
+import com.gridpadel.domain.exception.DomainException;
+
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.*;
@@ -23,7 +25,7 @@ class TournamentIdTest {
     @Test
     void shouldRejectNullValue() {
         assertThatThrownBy(() -> TournamentId.of(null))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(DomainException.class);
     }
 
     @Test

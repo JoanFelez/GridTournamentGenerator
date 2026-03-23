@@ -1,5 +1,7 @@
 package com.gridpadel.domain.model.vo;
 
+import com.gridpadel.domain.exception.DomainException;
+
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.*;
@@ -21,20 +23,20 @@ class PlayerNameTest {
     @Test
     void shouldRejectNullName() {
         assertThatThrownBy(() -> PlayerName.of(null))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(DomainException.class);
     }
 
     @Test
     void shouldRejectBlankName() {
         assertThatThrownBy(() -> PlayerName.of("   "))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(DomainException.class);
     }
 
     @Test
     void shouldRejectNameExceeding100Characters() {
         String longName = "A".repeat(101);
         assertThatThrownBy(() -> PlayerName.of(longName))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(DomainException.class);
     }
 
     @Test

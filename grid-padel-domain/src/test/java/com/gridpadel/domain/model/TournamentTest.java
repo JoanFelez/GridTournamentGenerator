@@ -1,5 +1,7 @@
 package com.gridpadel.domain.model;
 
+import com.gridpadel.domain.exception.DomainException;
+
 import com.gridpadel.domain.model.vo.*;
 import org.junit.jupiter.api.Test;
 
@@ -26,7 +28,7 @@ class TournamentTest {
     @Test
     void shouldRejectBlankName() {
         assertThatThrownBy(() -> Tournament.create("  "))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(DomainException.class);
     }
 
     @Test
@@ -44,7 +46,7 @@ class TournamentTest {
             tournament.addPair(pair("P" + i + "a", "P" + i + "b"));
         }
         assertThatThrownBy(() -> tournament.addPair(pair("Extra1", "Extra2")))
-                .isInstanceOf(IllegalStateException.class)
+                .isInstanceOf(DomainException.class)
                 .hasMessageContaining("32");
     }
 

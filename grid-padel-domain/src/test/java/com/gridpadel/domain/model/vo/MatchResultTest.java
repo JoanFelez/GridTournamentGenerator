@@ -1,5 +1,7 @@
 package com.gridpadel.domain.model.vo;
 
+import com.gridpadel.domain.exception.DomainException;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -78,32 +80,32 @@ class MatchResultTest {
     @Test
     void shouldRejectNullSetsList() {
         assertThatThrownBy(() -> MatchResult.of((List<SetResult>) null))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(DomainException.class);
     }
 
     @Test
     void shouldRejectEmptySetsList() {
         assertThatThrownBy(() -> MatchResult.of(List.of()))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(DomainException.class);
     }
 
     @Test
     void shouldRejectSingleSet() {
         assertThatThrownBy(() -> MatchResult.of(List.of(set(6, 3))))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(DomainException.class);
     }
 
     @Test
     void shouldRejectFourSets() {
         assertThatThrownBy(() -> MatchResult.of(List.of(set(6, 3), set(3, 6), set(6, 4), set(6, 2))))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(DomainException.class);
     }
 
     @Test
     void shouldRejectTwoSetsWhenNoOneWonTwo() {
         // 1-1 after 2 sets — match not decided
         assertThatThrownBy(() -> MatchResult.of(List.of(set(6, 3), set(3, 6))))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(DomainException.class)
                 .hasMessageContaining("2 sets");
     }
 
@@ -111,14 +113,14 @@ class MatchResultTest {
     void shouldRejectThreeSetsWhenSomeoneWonFirstTwo() {
         // Pair 1 won first 2 sets — third set shouldn't be played
         assertThatThrownBy(() -> MatchResult.of(List.of(set(6, 3), set(6, 4), set(6, 2))))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(DomainException.class)
                 .hasMessageContaining("already won");
     }
 
     @Test
     void shouldRejectThreeSetsWhenPair2WonFirstTwo() {
         assertThatThrownBy(() -> MatchResult.of(List.of(set(3, 6), set(4, 6), set(2, 6))))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(DomainException.class)
                 .hasMessageContaining("already won");
     }
 

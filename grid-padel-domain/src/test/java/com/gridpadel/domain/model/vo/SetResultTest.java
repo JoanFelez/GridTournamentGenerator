@@ -1,5 +1,7 @@
 package com.gridpadel.domain.model.vo;
 
+import com.gridpadel.domain.exception.DomainException;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -35,7 +37,7 @@ class SetResultTest {
     })
     void shouldRejectInvalidSetScores(int pair1Games, int pair2Games) {
         assertThatThrownBy(() -> SetResult.of(pair1Games, pair2Games))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(DomainException.class);
     }
 
     @Test

@@ -1,5 +1,7 @@
 package com.gridpadel.domain.model.vo;
 
+import com.gridpadel.domain.exception.DomainException;
+
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.*;
@@ -21,13 +23,13 @@ class LocationTest {
     @Test
     void shouldRejectNullValue() {
         assertThatThrownBy(() -> Location.of(null))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(DomainException.class);
     }
 
     @Test
     void shouldRejectBlankValue() {
         assertThatThrownBy(() -> Location.of("  "))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(DomainException.class);
     }
 
     @Test
