@@ -1,12 +1,14 @@
 package com.gridpadel.domain.model.vo;
 
+import com.gridpadel.domain.exception.ValidationException;
+
 import java.util.UUID;
 
 public record MatchId(String value) {
 
     public MatchId {
         if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException("MatchId cannot be null or blank");
+            throw new ValidationException("Match ID cannot be blank", "matchId");
         }
     }
 

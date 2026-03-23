@@ -1,5 +1,7 @@
 package com.gridpadel.domain.model.vo;
 
+import com.gridpadel.domain.exception.DomainException;
+
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
@@ -18,7 +20,7 @@ class MatchDateTimeTest {
     @Test
     void shouldRejectNullValue() {
         assertThatThrownBy(() -> MatchDateTime.of(null))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(DomainException.class);
     }
 
     @Test

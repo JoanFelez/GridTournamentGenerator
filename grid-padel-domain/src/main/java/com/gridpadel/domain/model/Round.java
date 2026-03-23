@@ -1,5 +1,7 @@
 package com.gridpadel.domain.model;
 
+import com.gridpadel.domain.exception.EntityNotFoundException;
+import com.gridpadel.domain.exception.ValidationException;
 import com.gridpadel.domain.model.vo.BracketType;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -15,7 +17,7 @@ public class Round {
 
     private Round(int roundNumber, List<Match> matches, BracketType bracketType) {
         if (matches == null || matches.isEmpty()) {
-            throw new IllegalArgumentException("Round must have at least one match");
+            throw new ValidationException("Round must have at least one match", "matches");
         }
         this.roundNumber = roundNumber;
         this.matches = new ArrayList<>(matches);
@@ -34,7 +36,7 @@ public class Round {
         return matches.stream()
                 .filter(m -> m.position() == position)
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("No match at position " + position));
+                .orElseThrow(() -> new EntityNotFoundException("No match at position " + position));
     }
 
     public boolean isComplete() {

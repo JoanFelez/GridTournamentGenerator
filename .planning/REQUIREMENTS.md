@@ -26,6 +26,7 @@
 | REQ-20 | Seeded pairs get favorable bracket placement (avoid meeting early) | Must |
 | REQ-21 | Top seeds may receive BYEs when pair count is not a power of 2 | Must |
 | REQ-22 | Match stores full set-by-set result with padel scoring rules (6-0..6-4, 7-5, 7-6; best of 3 sets) | Must |
+| REQ-23 | Input validation errors show informative messages without stopping execution; user can correct and retry | Must |
 
 ## Non-Functional Requirements
 

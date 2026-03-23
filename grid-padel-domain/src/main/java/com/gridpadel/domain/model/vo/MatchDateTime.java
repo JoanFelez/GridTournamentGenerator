@@ -1,12 +1,14 @@
 package com.gridpadel.domain.model.vo;
 
+import com.gridpadel.domain.exception.ValidationException;
+
 import java.time.LocalDateTime;
 
 public record MatchDateTime(LocalDateTime value) {
 
     public MatchDateTime {
         if (value == null) {
-            throw new IllegalArgumentException("Match date-time cannot be null");
+            throw new ValidationException("Match date-time cannot be null", "dateTime");
         }
     }
 

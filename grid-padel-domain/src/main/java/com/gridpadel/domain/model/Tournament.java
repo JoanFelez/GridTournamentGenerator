@@ -1,5 +1,7 @@
 package com.gridpadel.domain.model;
 
+import com.gridpadel.domain.exception.InvalidOperationException;
+import com.gridpadel.domain.exception.ValidationException;
 import com.gridpadel.domain.model.vo.BracketType;
 import com.gridpadel.domain.model.vo.PairId;
 import com.gridpadel.domain.model.vo.TournamentId;
@@ -40,7 +42,7 @@ public class Tournament implements DomainEntity {
 
     public static Tournament create(String name) {
         if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Tournament name cannot be blank");
+            throw new ValidationException("Tournament name cannot be blank", "name");
         }
         LocalDateTime now = LocalDateTime.now();
         return new Tournament(
@@ -70,7 +72,7 @@ public class Tournament implements DomainEntity {
 
     public void updateName(String newName) {
         if (newName == null || newName.isBlank()) {
-            throw new IllegalArgumentException("Tournament name cannot be blank");
+            throw new ValidationException("Tournament name cannot be blank", "name");
         }
         this.name = newName.trim();
         this.updatedAt = LocalDateTime.now();
@@ -78,7 +80,7 @@ public class Tournament implements DomainEntity {
 
     public void addPair(Pair pair) {
         if (pairs.size() >= MAX_PAIRS) {
-            throw new IllegalStateException("Tournament cannot have more than " + MAX_PAIRS + " pairs");
+            throw new InvalidOperationException("Tournament cannot have more than " + MAX_PAIRS + " pairs");
         }
         pairs.add(Objects.requireNonNull(pair));
         this.updatedAt = LocalDateTime.now();

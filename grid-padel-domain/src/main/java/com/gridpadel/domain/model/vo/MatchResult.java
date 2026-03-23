@@ -1,5 +1,7 @@
 package com.gridpadel.domain.model.vo;
 
+import com.gridpadel.domain.exception.ValidationException;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -7,10 +9,10 @@ public record MatchResult(List<SetResult> sets) {
 
     public MatchResult {
         if (sets == null || sets.isEmpty()) {
-            throw new IllegalArgumentException("Match must have at least one set result");
+            throw new ValidationException("Match must have at least one set result", "matchResult");
         }
         if (sets.size() < 2 || sets.size() > 3) {
-            throw new IllegalArgumentException("Match must have 2 or 3 sets, got " + sets.size());
+            throw new ValidationException("Match must have 2 or 3 sets, got " + sets.size(), "matchResult");
         }
 
         sets = List.copyOf(sets);
@@ -20,8 +22,8 @@ public record MatchResult(List<SetResult> sets) {
 
         if (sets.size() == 2) {
             if (pair1Wins != 2 && pair2Wins != 2) {
-                throw new IllegalArgumentException(
-                        "With 2 sets, one pair must have won both");
+                throw new ValidationException(
+                        "With 2 sets, one pair must have won both", "matchResult");
             }
         }
 
@@ -30,12 +32,12 @@ public record MatchResult(List<SetResult> sets) {
             long p2FirstTwo = sets.subList(0, 2).stream().filter(s -> s.winnerPosition() == 2).count();
 
             if (p1FirstTwo == 2) {
-                throw new IllegalArgumentException(
-                        "Pair 1 already won after 2 sets — third set should not be played");
+                throw new ValidationException(
+                        "Pair 1 already won after 2 sets — third set should not be played", "matchResult");
             }
             if (p2FirstTwo == 2) {
-                throw new IllegalArgumentException(
-                        "Pair 2 already won after 2 sets — third set should not be played");
+                throw new ValidationException(
+                        "Pair 2 already won after 2 sets — third set should not be played", "matchResult");
             }
         }
     }

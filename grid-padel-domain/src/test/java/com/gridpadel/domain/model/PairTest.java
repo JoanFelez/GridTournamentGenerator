@@ -1,5 +1,7 @@
 package com.gridpadel.domain.model;
 
+import com.gridpadel.domain.exception.DomainException;
+
 import com.gridpadel.domain.model.vo.PairId;
 import com.gridpadel.domain.model.vo.PlayerName;
 import org.junit.jupiter.api.Test;
@@ -37,9 +39,9 @@ class PairTest {
     void shouldNotAllowAccessingPlayerNamesOnByePair() {
         Pair bye = Pair.bye();
         assertThatThrownBy(() -> bye.player1Name())
-                .isInstanceOf(IllegalStateException.class);
+                .isInstanceOf(DomainException.class);
         assertThatThrownBy(() -> bye.player2Name())
-                .isInstanceOf(IllegalStateException.class);
+                .isInstanceOf(DomainException.class);
     }
 
     @Test
@@ -74,7 +76,7 @@ class PairTest {
     void shouldNotAllowUpdatingByePairNames() {
         Pair bye = Pair.bye();
         assertThatThrownBy(() -> bye.updatePlayer1Name(PlayerName.of("Carlos")))
-                .isInstanceOf(IllegalStateException.class);
+                .isInstanceOf(DomainException.class);
     }
 
     @Test
@@ -122,16 +124,16 @@ class PairTest {
     void shouldRejectNonPositiveSeed() {
         Pair pair = Pair.create(PlayerName.of("Carlos"), PlayerName.of("María"));
         assertThatThrownBy(() -> pair.assignSeed(0))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(DomainException.class);
         assertThatThrownBy(() -> pair.assignSeed(-1))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(DomainException.class);
     }
 
     @Test
     void shouldNotAllowSeedOnByePair() {
         Pair bye = Pair.bye();
         assertThatThrownBy(() -> bye.assignSeed(1))
-                .isInstanceOf(IllegalStateException.class);
+                .isInstanceOf(DomainException.class);
     }
 
     @Test

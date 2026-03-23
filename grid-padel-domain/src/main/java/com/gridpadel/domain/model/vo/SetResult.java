@@ -1,15 +1,18 @@
 package com.gridpadel.domain.model.vo;
 
+import com.gridpadel.domain.exception.ValidationException;
+
 public record SetResult(int pair1Games, int pair2Games) {
 
     public SetResult {
         if (pair1Games < 0 || pair2Games < 0) {
-            throw new IllegalArgumentException("Games cannot be negative");
+            throw new ValidationException("Games cannot be negative", "setResult");
         }
         if (!isValidSetScore(pair1Games, pair2Games)) {
-            throw new IllegalArgumentException(
+            throw new ValidationException(
                     "Invalid set score: " + pair1Games + "-" + pair2Games
-                            + ". Valid: 6-0..6-4, 7-5, 7-6 (and reverses)");
+                            + ". Valid scores: 6-0 to 6-4, 7-5, 7-6 (and reverses)",
+                    "setResult");
         }
     }
 

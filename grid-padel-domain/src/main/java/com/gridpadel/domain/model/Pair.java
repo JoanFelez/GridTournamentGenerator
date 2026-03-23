@@ -1,5 +1,7 @@
 package com.gridpadel.domain.model;
 
+import com.gridpadel.domain.exception.InvalidOperationException;
+import com.gridpadel.domain.exception.ValidationException;
 import com.gridpadel.domain.model.vo.PairId;
 import com.gridpadel.domain.model.vo.PlayerName;
 import lombok.EqualsAndHashCode;
@@ -27,8 +29,12 @@ public class Pair implements DomainEntity {
     }
 
     public static Pair create(PlayerName player1Name, PlayerName player2Name) {
-        Objects.requireNonNull(player1Name, "Player 1 name is required");
-        Objects.requireNonNull(player2Name, "Player 2 name is required");
+        if (player1Name == null) {
+            throw new ValidationException("Player 1 name is required", "player1Name");
+        }
+        if (player2Name == null) {
+            throw new ValidationException("Player 2 name is required", "player2Name");
+        }
         return new Pair(PairId.generate(), player1Name, player2Name, false, null);
     }
 
@@ -46,14 +52,14 @@ public class Pair implements DomainEntity {
 
     public PlayerName player1Name() {
         if (bye) {
-            throw new IllegalStateException("BYE pair has no player data");
+            throw new InvalidOperationException("BYE pair has no player data");
         }
         return player1Name;
     }
 
     public PlayerName player2Name() {
         if (bye) {
-            throw new IllegalStateException("BYE pair has no player data");
+            throw new InvalidOperationException("BYE pair has no player data");
         }
         return player2Name;
     }
@@ -76,10 +82,10 @@ public class Pair implements DomainEntity {
 
     public void assignSeed(int seedNumber) {
         if (bye) {
-            throw new IllegalStateException("Cannot assign seed to a BYE pair");
+            throw new InvalidOperationException("Cannot assign seed to a BYE pair");
         }
         if (seedNumber <= 0) {
-            throw new IllegalArgumentException("Seed must be a positive number");
+            throw new ValidationException("Seed must be a positive number", "seed");
         }
         this.seed = seedNumber;
     }
@@ -90,14 +96,14 @@ public class Pair implements DomainEntity {
 
     public void updatePlayer1Name(PlayerName newName) {
         if (bye) {
-            throw new IllegalStateException("Cannot update player names on a BYE pair");
+            throw new InvalidOperationException("Cannot update player names on a BYE pair");
         }
         this.player1Name = Objects.requireNonNull(newName);
     }
 
     public void updatePlayer2Name(PlayerName newName) {
         if (bye) {
-            throw new IllegalStateException("Cannot update player names on a BYE pair");
+            throw new InvalidOperationException("Cannot update player names on a BYE pair");
         }
         this.player2Name = Objects.requireNonNull(newName);
     }
