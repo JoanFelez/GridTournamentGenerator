@@ -5,10 +5,10 @@ import com.gridpadel.domain.model.Pair;
 import com.gridpadel.domain.model.Round;
 import com.gridpadel.domain.model.vo.BracketType;
 import com.gridpadel.infrastructure.persistence.dto.RoundDto;
+import io.vavr.collection.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.Map;
 
 @Component
@@ -21,15 +21,14 @@ public class RoundDtoMapper {
         return new RoundDto(
                 round.roundNumber(),
                 round.bracketType().name(),
-                round.matches().stream().map(matchDtoMapper::toDto).toList()
+                round.matches().map(matchDtoMapper::toDto).toJavaList()
         );
     }
 
     public Round fromDto(RoundDto dto, Map<String, Pair> pairLookup) {
         BracketType type = BracketType.valueOf(dto.bracketType());
-        List<Match> matches = dto.matches().stream()
-                .map(m -> matchDtoMapper.fromDto(m, pairLookup))
-                .toList();
+        List<Match> matches = List.ofAll(dto.matches())
+                .map(m -> matchDtoMapper.fromDto(m, pairLookup));
         return Round.of(dto.roundNumber(), matches, type);
     }
 }

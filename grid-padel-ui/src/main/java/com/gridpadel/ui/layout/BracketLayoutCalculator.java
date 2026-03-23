@@ -4,9 +4,7 @@ import com.gridpadel.domain.model.Bracket;
 import com.gridpadel.domain.model.Match;
 import com.gridpadel.domain.model.Round;
 import com.gridpadel.domain.model.Tournament;
-
-import java.util.ArrayList;
-import java.util.List;
+import io.vavr.collection.List;
 
 public class BracketLayoutCalculator {
 
@@ -28,13 +26,18 @@ public class BracketLayoutCalculator {
         int r1MatchCount = mainRounds > 0 ? mainBracket.rounds().get(0).matchCount() : 0;
         double totalHeight = calculateTotalHeight(r1MatchCount);
 
-        List<MatchPosition> positions = new ArrayList<>();
-        List<ConnectorLine> connectors = new ArrayList<>();
+        List<MatchPosition> positions = List.empty();
+        List<ConnectorLine> connectors = List.empty();
 
-        layoutBracket(mainBracket, centerX, totalHeight, true, positions, connectors);
-        layoutBracket(consolationBracket, centerX, totalHeight, false, positions, connectors);
+        var result = layoutBracket(mainBracket, centerX, totalHeight, true, positions, connectors);
+        positions = result.positions;
+        connectors = result.connectors;
 
-        return new BracketLayout(positions, connectors);
+        result = layoutBracket(consolationBracket, centerX, totalHeight, false, positions, connectors);
+        positions = result.positions;
+        connectors = result.connectors;
+
+        return new BracketLayout(positions.toJavaList(), connectors.toJavaList());
     }
 
     double calculateCenterX(int consolationRounds) {
@@ -46,10 +49,12 @@ public class BracketLayoutCalculator {
         return PADDING * 2 + r1MatchCount * MATCH_BOX_HEIGHT + (r1MatchCount - 1) * VERTICAL_GAP;
     }
 
-    void layoutBracket(Bracket bracket, double centerX, double totalHeight,
-                       boolean isMain, List<MatchPosition> positions, List<ConnectorLine> connectors) {
-        List<Round> rounds = bracket.rounds();
-        if (rounds.isEmpty()) return;
+    private record LayoutResult(List<MatchPosition> positions, List<ConnectorLine> connectors) {}
+
+    LayoutResult layoutBracket(Bracket bracket, double centerX, double totalHeight,
+                        boolean isMain, List<MatchPosition> positions, List<ConnectorLine> connectors) {
+        io.vavr.collection.List<Round> rounds = bracket.rounds();
+        if (rounds.isEmpty()) return new LayoutResult(positions, connectors);
 
         for (int roundIdx = 0; roundIdx < rounds.size(); roundIdx++) {
             Round round = rounds.get(roundIdx);
@@ -63,7 +68,7 @@ public class BracketLayoutCalculator {
                 Match match = round.matches().get(matchIdx);
                 double y = matchYPositions[matchIdx];
 
-                positions.add(new MatchPosition(
+                positions = positions.append(new MatchPosition(
                         match.id().value(), columnX, y,
                         round.roundNumber(), match.position(),
                         !isMain
@@ -71,10 +76,12 @@ public class BracketLayoutCalculator {
             }
 
             if (roundIdx > 0) {
-                addConnectors(round, rounds.get(roundIdx - 1), columnX, matchYPositions,
+                connectors = addConnectors(round, rounds.get(roundIdx - 1), columnX, matchYPositions,
                         isMain, positions, connectors);
             }
         }
+
+        return new LayoutResult(positions, connectors);
     }
 
     double calculateColumnX(double centerX, int roundIdx, boolean isMain) {
@@ -83,7 +90,7 @@ public class BracketLayoutCalculator {
     }
 
     double[] calculateMatchYPositions(int roundIdx, int matchCount, double totalHeight,
-                                      List<Round> rounds, boolean isMain,
+                                      io.vavr.collection.List<Round> rounds, boolean isMain,
                                       List<MatchPosition> existingPositions) {
         double[] yPositions = new double[matchCount];
 
@@ -121,16 +128,14 @@ public class BracketLayoutCalculator {
     }
 
     double findMatchY(String matchId, List<MatchPosition> positions) {
-        return positions.stream()
-                .filter(p -> p.matchId().equals(matchId))
-                .findFirst()
+        return positions.find(p -> p.matchId().equals(matchId))
                 .map(MatchPosition::y)
-                .orElse(0.0);
+                .getOrElse(0.0);
     }
 
-    void addConnectors(Round currentRound, Round prevRound, double columnX,
-                       double[] currentYPositions, boolean isMain,
-                       List<MatchPosition> positions, List<ConnectorLine> connectors) {
+    List<ConnectorLine> addConnectors(Round currentRound, Round prevRound, double columnX,
+                        double[] currentYPositions, boolean isMain,
+                        List<MatchPosition> positions, List<ConnectorLine> connectors) {
         int prevMatchCount = prevRound.matchCount();
 
         for (int i = 0; i < currentRound.matchCount(); i++) {
@@ -151,19 +156,17 @@ public class BracketLayoutCalculator {
                     ? columnX - COLUMN_GAP
                     : columnX + MATCH_BOX_WIDTH + COLUMN_GAP;
 
-            // Horizontal from feeder1 to midpoint
-            connectors.add(new ConnectorLine(feeder1EdgeX, feeder1Y, midX, feeder1Y));
-            // Horizontal from midpoint to current match
-            connectors.add(new ConnectorLine(midX, currentMatchCenterY, currentMatchEdgeX, currentMatchCenterY));
+            connectors = connectors.append(new ConnectorLine(feeder1EdgeX, feeder1Y, midX, feeder1Y));
+            connectors = connectors.append(new ConnectorLine(midX, currentMatchCenterY, currentMatchEdgeX, currentMatchCenterY));
 
             if (feeder2Idx < prevMatchCount) {
                 double feeder2Y = findMatchY(prevRound.matches().get(feeder2Idx).id().value(), positions)
                         + MATCH_BOX_HEIGHT / 2;
-                // Horizontal from feeder2 to midpoint
-                connectors.add(new ConnectorLine(feeder1EdgeX, feeder2Y, midX, feeder2Y));
-                // Vertical connecting feeder1 to feeder2 at midpoint
-                connectors.add(new ConnectorLine(midX, feeder1Y, midX, feeder2Y));
+                connectors = connectors.append(new ConnectorLine(feeder1EdgeX, feeder2Y, midX, feeder2Y));
+                connectors = connectors.append(new ConnectorLine(midX, feeder1Y, midX, feeder2Y));
             }
         }
+
+        return connectors;
     }
 }

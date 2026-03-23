@@ -1,7 +1,6 @@
 package com.gridpadel.ui.component;
 
 import com.gridpadel.domain.model.Match;
-import com.gridpadel.domain.model.vo.SetResult;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -12,7 +11,6 @@ import javafx.scene.layout.VBox;
 
 import java.time.format.DateTimeFormatter;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 public class MatchBoxView extends VBox {
 
@@ -115,11 +113,11 @@ public class MatchBoxView extends VBox {
 
     private String buildScoreText(boolean isPair1) {
         return match.result()
-                .map(r -> r.sets().stream()
+                .map(r -> r.sets()
                         .map(s -> isPair1
                                 ? String.valueOf(s.pair1Games())
                                 : String.valueOf(s.pair2Games()))
-                        .collect(Collectors.joining(" ")))
+                        .mkString(" "))
                 .getOrElse("");
     }
 

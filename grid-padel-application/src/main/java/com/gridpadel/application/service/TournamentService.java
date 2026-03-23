@@ -7,11 +7,11 @@ import com.gridpadel.domain.model.vo.*;
 import com.gridpadel.domain.repository.TournamentRepository;
 import com.gridpadel.domain.service.BracketGenerationService;
 import com.gridpadel.domain.service.MatchAdvancementService;
+import io.vavr.collection.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -102,7 +102,7 @@ public class TournamentService implements ApplicationService {
     }
 
     private Match findMatch(Tournament tournament, MatchId matchId) {
-        return io.vavr.collection.List.ofAll(tournament.allMatches())
+        return tournament.allMatches()
                 .find(m -> m.id().equals(matchId))
                 .getOrElseThrow(() -> new IllegalArgumentException("Match not found: " + matchId.value()));
     }

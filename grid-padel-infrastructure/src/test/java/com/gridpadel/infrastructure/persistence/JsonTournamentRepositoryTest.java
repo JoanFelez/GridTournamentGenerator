@@ -14,7 +14,7 @@ import org.junit.jupiter.api.io.TempDir;
 import com.gridpadel.infrastructure.persistence.mapper.*;
 
 import java.nio.file.Path;
-import java.util.List;
+import io.vavr.collection.List;
 import io.vavr.control.Option;
 
 import static org.assertj.core.api.Assertions.*;
@@ -37,7 +37,7 @@ class JsonTournamentRepositoryTest {
 
     private static TournamentDtoMapper createMapper() {
         SetResultDtoMapper setResultMapper = new SetResultDtoMapperImpl();
-        MatchResultDtoMapper matchResultMapper = new MatchResultDtoMapperImpl(setResultMapper);
+        MatchResultDtoMapper matchResultMapper = new MatchResultDtoMapper(setResultMapper);
         MatchDtoMapper matchMapper = new MatchDtoMapper(matchResultMapper);
         RoundDtoMapper roundMapper = new RoundDtoMapper(matchMapper);
         BracketDtoMapper bracketMapper = new BracketDtoMapper(roundMapper);

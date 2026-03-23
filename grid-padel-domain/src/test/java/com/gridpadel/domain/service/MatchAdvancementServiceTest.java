@@ -144,9 +144,9 @@ class MatchAdvancementServiceTest {
         Pair consolationLoser = consolationMatch.loser().getOrElseThrow(() ->
                 new AssertionError("Expected loser"));
         // No more matches for this pair in any bracket
-        boolean hasMoreMatches = t.allMatches().stream()
+        boolean hasMoreMatches = t.allMatches()
                 .filter(m -> !m.isPlayed())
-                .anyMatch(m -> pairIsInMatch(m, consolationLoser));
+                .exists(m -> pairIsInMatch(m, consolationLoser));
         assertThat(hasMoreMatches).isFalse();
     }
 

@@ -8,13 +8,12 @@ import com.gridpadel.domain.model.vo.TournamentId;
 import com.gridpadel.infrastructure.persistence.dto.*;
 import com.gridpadel.infrastructure.persistence.mapper.BracketDtoMapper;
 import com.gridpadel.infrastructure.persistence.mapper.PairDtoMapper;
+import io.vavr.collection.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Component
@@ -30,7 +29,7 @@ public class TournamentDtoMapper {
         return new TournamentDto(
                 tournament.id().value(),
                 tournament.name(),
-                tournament.pairs().stream().map(pairDtoMapper::toDto).toList(),
+                tournament.pairs().map(pairDtoMapper::toDto).toJavaList(),
                 bracketDtoMapper.toDto(tournament.mainBracket()),
                 bracketDtoMapper.toDto(tournament.consolationBracket()),
                 tournament.createdAt().format(DT_FORMAT),
@@ -39,7 +38,7 @@ public class TournamentDtoMapper {
     }
 
     public Tournament fromDto(TournamentDto dto) {
-        List<Pair> pairs = dto.pairs().stream().map(pairDtoMapper::fromDto).toList();
+        java.util.List<Pair> pairs = List.ofAll(dto.pairs()).map(pairDtoMapper::fromDto).toJavaList();
         Map<String, Pair> pairLookup = buildPairLookup(pairs);
 
         collectBracketPairs(dto.mainBracket(), pairLookup);
@@ -59,24 +58,24 @@ public class TournamentDtoMapper {
         );
     }
 
-    Map<String, Pair> buildPairLookup(List<Pair> pairs) {
-        Map<String, Pair> lookup = new HashMap<>();
-        pairs.forEach(p -> lookup.put(p.id().value(), p));
+    Map<String, Pair> buildPairLookup(java.util.List<Pair> pairs) {
+        java.util.Map<String, Pair> lookup = new java.util.HashMap<>();
+        List.ofAll(pairs).forEach(p -> lookup.put(p.id().value(), p));
         return lookup;
     }
 
     void collectBracketPairs(BracketDto bracketDto, Map<String, Pair> pairLookup) {
-        for (RoundDto round : bracketDto.rounds()) {
-            for (MatchDto match : round.matches()) {
-                if (match.pair1Id() != null && !pairLookup.containsKey(match.pair1Id())) {
-                    Pair bye = Pair.restore(PairId.of(match.pair1Id()), null, null, true, null);
-                    pairLookup.put(match.pair1Id(), bye);
-                }
-                if (match.pair2Id() != null && !pairLookup.containsKey(match.pair2Id())) {
-                    Pair bye = Pair.restore(PairId.of(match.pair2Id()), null, null, true, null);
-                    pairLookup.put(match.pair2Id(), bye);
-                }
-            }
-        }
+        List.ofAll(bracketDto.rounds())
+                .flatMap(round -> List.ofAll(round.matches()))
+                .forEach(match -> {
+                    if (match.pair1Id() != null && !pairLookup.containsKey(match.pair1Id())) {
+                        Pair bye = Pair.restore(PairId.of(match.pair1Id()), null, null, true, null);
+                        pairLookup.put(match.pair1Id(), bye);
+                    }
+                    if (match.pair2Id() != null && !pairLookup.containsKey(match.pair2Id())) {
+                        Pair bye = Pair.restore(PairId.of(match.pair2Id()), null, null, true, null);
+                        pairLookup.put(match.pair2Id(), bye);
+                    }
+                });
     }
 }

@@ -2,9 +2,7 @@ package com.gridpadel.domain.service;
 
 import com.gridpadel.domain.model.*;
 import com.gridpadel.domain.model.vo.*;
-
-import java.util.ArrayList;
-import java.util.List;
+import io.vavr.collection.List;
 
 public class MatchAdvancementService {
 
@@ -73,10 +71,8 @@ public class MatchAdvancementService {
 
         if (consolation.round(consolationRound).isEmpty()) {
             int numConsolationMatches = tournament.mainBracket().rounds().get(0).matchCount() / 2;
-            List<Match> matches = new ArrayList<>();
-            for (int i = 0; i < numConsolationMatches; i++) {
-                matches.add(Match.createEmpty(consolationRound, i, BracketType.CONSOLATION));
-            }
+            List<Match> matches = List.range(0, numConsolationMatches)
+                    .map(i -> Match.createEmpty(consolationRound, i, BracketType.CONSOLATION));
             consolation.addRound(Round.of(consolationRound, matches, BracketType.CONSOLATION));
         }
 
@@ -125,7 +121,7 @@ public class MatchAdvancementService {
     }
 
     private Match findMatch(Tournament tournament, MatchId matchId) {
-        return io.vavr.collection.List.ofAll(tournament.allMatches())
+        return tournament.allMatches()
                 .find(m -> m.id().equals(matchId))
                 .getOrElseThrow(() -> new IllegalArgumentException("Match not found: " + matchId));
     }
