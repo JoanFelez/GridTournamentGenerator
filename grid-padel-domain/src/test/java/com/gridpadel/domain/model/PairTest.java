@@ -28,8 +28,18 @@ class PairTest {
     void shouldCreateByePair() {
         Pair bye = Pair.bye();
         assertThat(bye.isBye()).isTrue();
-        assertThat(bye.player1Name().value()).isEqualTo("BYE");
-        assertThat(bye.player2Name().value()).isEqualTo("BYE");
+        assertThat(bye.displayName()).isEqualTo("BYE");
+        assertThat(bye.seed()).isEmpty();
+        assertThat(bye.isSeeded()).isFalse();
+    }
+
+    @Test
+    void shouldNotAllowAccessingPlayerNamesOnByePair() {
+        Pair bye = Pair.bye();
+        assertThatThrownBy(() -> bye.player1Name())
+                .isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> bye.player2Name())
+                .isInstanceOf(IllegalStateException.class);
     }
 
     @Test

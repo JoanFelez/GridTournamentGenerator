@@ -16,18 +16,20 @@ public class Pair implements DomainEntity {
 
     private Pair(PairId id, PlayerName player1Name, PlayerName player2Name, boolean bye, Integer seed) {
         this.id = Objects.requireNonNull(id);
-        this.player1Name = Objects.requireNonNull(player1Name);
-        this.player2Name = Objects.requireNonNull(player2Name);
+        this.player1Name = player1Name;
+        this.player2Name = player2Name;
         this.bye = bye;
         this.seed = seed;
     }
 
     public static Pair create(PlayerName player1Name, PlayerName player2Name) {
+        Objects.requireNonNull(player1Name, "Player 1 name is required");
+        Objects.requireNonNull(player2Name, "Player 2 name is required");
         return new Pair(PairId.generate(), player1Name, player2Name, false, null);
     }
 
     public static Pair bye() {
-        return new Pair(PairId.generate(), PlayerName.of("BYE"), PlayerName.of("BYE"), true, null);
+        return new Pair(PairId.generate(), null, null, true, null);
     }
 
     public static Pair restore(PairId id, PlayerName player1Name, PlayerName player2Name, boolean bye, Integer seed) {
@@ -39,10 +41,16 @@ public class Pair implements DomainEntity {
     }
 
     public PlayerName player1Name() {
+        if (bye) {
+            throw new IllegalStateException("BYE pair has no player data");
+        }
         return player1Name;
     }
 
     public PlayerName player2Name() {
+        if (bye) {
+            throw new IllegalStateException("BYE pair has no player data");
+        }
         return player2Name;
     }
 
@@ -59,6 +67,9 @@ public class Pair implements DomainEntity {
     }
 
     public String displayName() {
+        if (bye) {
+            return "BYE";
+        }
         String base = player1Name.value() + " / " + player2Name.value();
         return seed != null ? "[" + seed + "] " + base : base;
     }
