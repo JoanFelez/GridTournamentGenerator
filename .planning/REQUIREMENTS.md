@@ -18,6 +18,10 @@
 | REQ-12 | Grid rendered visually on screen | Must |
 | REQ-13 | Export grid to PDF | Must |
 | REQ-14 | Auto-executable on Windows 11 (.exe) | Must |
+| REQ-15 | Location and date-time can be set in advance (before match is played) | Must |
+| REQ-16 | All tournament data is editable at any time (pairs, results, locations, dates) | Must |
+| REQ-17 | Tournament history: save, reopen, and modify past tournaments | Must |
+| REQ-18 | Persist tournaments to local storage (file-based) | Must |
 
 ## Non-Functional Requirements
 

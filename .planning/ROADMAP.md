@@ -32,15 +32,19 @@
 - [ ] Pair, Match, Round, Bracket, Tournament entities with proper DDD modeling
 - [ ] Value Objects for MatchResult, Location, MatchDateTime
 - [ ] Domain rules enforced (max 32 pairs, BYE logic, double-elimination invariants)
+- [ ] Location and date-time can exist on a match before it is played (pre-set)
+- [ ] All entities support mutation (edit pair names, change results, update locations/dates)
+- [ ] Tournament aggregate root with full state (supports save/restore)
+- [ ] Repository interface for tournament persistence (port)
 - [ ] 90%+ test coverage on domain layer
 - [ ] All tests written before implementation (TDD)
 
-**Covers:** REQ-01, REQ-02, REQ-08, REQ-10, REQ-11, NFR-03, NFR-04
+**Covers:** REQ-01, REQ-02, REQ-08, REQ-10, REQ-11, REQ-15, REQ-16, NFR-03, NFR-04
 
 ---
 
 ## Phase 3: Bracket Logic & Application Services
-**Goal:** Tournament bracket generation, BYE assignment, auto-advancement, consolation routing.
+**Goal:** Tournament bracket generation, BYE assignment, auto-advancement, consolation routing, persistence.
 
 **Success Criteria:**
 - [ ] Bracket generation algorithm for 1–32 pairs
@@ -49,9 +53,12 @@
 - [ ] Losers from round 1 routed to consolation bracket
 - [ ] Second-loss elimination working
 - [ ] Application services orchestrate domain operations
+- [ ] Save/load tournament use cases (serialize to JSON/file)
+- [ ] Edit tournament use case (modify any field, recompute bracket state)
+- [ ] Tournament history listing (list saved tournaments)
 - [ ] Full TDD coverage
 
-**Covers:** REQ-02, REQ-03, REQ-04, REQ-09, REQ-10, REQ-11
+**Covers:** REQ-02, REQ-03, REQ-04, REQ-09, REQ-10, REQ-11, REQ-16, REQ-17, REQ-18
 
 ---
 
@@ -69,18 +76,22 @@
 
 ---
 
-## Phase 5: UI — Match Management
-**Goal:** User interactions for match details and result entry.
+## Phase 5: UI — Match Management & Tournament History
+**Goal:** User interactions for match details, result entry, editing, and tournament history.
 
 **Success Criteria:**
 - [ ] Dialog to create/edit tournament (name, number of pairs)
 - [ ] Dialog to enter/edit pair names
 - [ ] Dialog to assign BYE positions
-- [ ] Dialog to enter match details (location, date-time)
-- [ ] Dialog to enter match results
+- [ ] Dialog to enter/edit match details (location, date-time) — including in advance
+- [ ] Dialog to enter/edit match results
 - [ ] Result entry triggers auto-advancement in the grid
+- [ ] All fields editable after initial entry (pairs, results, locations, dates)
+- [ ] Tournament history screen: list saved tournaments, open, delete
+- [ ] Save/auto-save current tournament
+- [ ] Reopen a saved tournament and resume editing
 
-**Covers:** REQ-03, REQ-08, REQ-09
+**Covers:** REQ-03, REQ-08, REQ-09, REQ-15, REQ-16, REQ-17, REQ-18
 
 ---
 
