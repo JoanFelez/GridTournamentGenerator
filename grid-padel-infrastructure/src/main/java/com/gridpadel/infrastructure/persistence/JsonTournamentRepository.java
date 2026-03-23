@@ -19,27 +19,13 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 @Repository
+@RequiredArgsConstructor
 public class JsonTournamentRepository implements TournamentRepository {
 
-    private final Path storageDir;
+    @Value("${gridpadel.storage.dir:#{systemProperties['user.home'] + '/.gridpadel/tournaments'}}")
+    private final String storageDir;
     private final ObjectMapper objectMapper;
     private final TournamentDtoMapper mapper;
-
-    public JsonTournamentRepository(
-            @Value("${gridpadel.storage.dir:#{systemProperties['user.home'] + '/.gridpadel/tournaments'}}") String storageDir,
-            ObjectMapper objectMapper,
-            TournamentDtoMapper mapper) {
-        this.storageDir = Path.of(storageDir);
-        this.objectMapper = objectMapper;
-        this.mapper = mapper;
-    }
-
-    // Package-private constructor for testing
-    JsonTournamentRepository(Path storageDir, ObjectMapper objectMapper, TournamentDtoMapper mapper) {
-        this.storageDir = storageDir;
-        this.objectMapper = objectMapper;
-        this.mapper = mapper;
-    }
 
     @PostConstruct
     void init() {
@@ -74,10 +60,11 @@ public class JsonTournamentRepository implements TournamentRepository {
 
     @Override
     public List<Tournament> findAll() {
-        if (!Files.exists(storageDir)) {
+        Path dir = storagePath();
+        if (!Files.exists(dir)) {
             return List.of();
         }
-        try (Stream<Path> files = Files.list(storageDir)) {
+        try (Stream<Path> files = Files.list(dir)) {
             return files
                     .filter(f -> f.toString().endsWith(".json"))
                     .map(this::loadTournament)
@@ -97,8 +84,12 @@ public class JsonTournamentRepository implements TournamentRepository {
         }
     }
 
+    private Path storagePath() {
+        return Path.of(storageDir);
+    }
+
     private Path tournamentFile(TournamentId id) {
-        return storageDir.resolve(id.value() + ".json");
+        return storagePath().resolve(id.value() + ".json");
     }
 
     private Tournament loadTournament(Path file) {
@@ -112,7 +103,7 @@ public class JsonTournamentRepository implements TournamentRepository {
 
     private void ensureStorageDir() {
         try {
-            Files.createDirectories(storageDir);
+            Files.createDirectories(storagePath());
         } catch (IOException e) {
             throw new RuntimeException("Failed to create storage directory: " + storageDir, e);
         }
