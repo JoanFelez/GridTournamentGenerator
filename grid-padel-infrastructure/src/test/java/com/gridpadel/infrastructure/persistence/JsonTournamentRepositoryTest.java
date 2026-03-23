@@ -37,7 +37,7 @@ class JsonTournamentRepositoryTest {
 
     private static TournamentDtoMapper createMapper() {
         SetResultDtoMapper setResultMapper = new SetResultDtoMapperImpl();
-        MatchResultDtoMapper matchResultMapper = new MatchResultDtoMapper(setResultMapper);
+        MatchResultDtoMapper matchResultMapper = new MatchResultDtoMapperImpl(setResultMapper);
         MatchDtoMapper matchMapper = new MatchDtoMapper(matchResultMapper);
         RoundDtoMapper roundMapper = new RoundDtoMapper(matchMapper);
         BracketDtoMapper bracketMapper = new BracketDtoMapper(roundMapper);
