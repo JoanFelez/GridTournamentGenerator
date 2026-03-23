@@ -11,15 +11,21 @@ import javafx.scene.shape.Line;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class BracketPane extends Pane {
 
     private final BracketLayoutCalculator layoutCalculator;
     private final Map<String, MatchBoxView> matchBoxes = new HashMap<>();
+    private Consumer<Match> matchClickHandler;
 
     public BracketPane() {
         this.layoutCalculator = new BracketLayoutCalculator();
         getStyleClass().add("bracket-pane");
+    }
+
+    public void setMatchClickHandler(Consumer<Match> handler) {
+        this.matchClickHandler = handler;
     }
 
     public void renderTournament(Tournament tournament) {
@@ -40,6 +46,9 @@ public class BracketPane extends Pane {
             MatchBoxView box = new MatchBoxView(match);
             box.setLayoutX(pos.x());
             box.setLayoutY(pos.y());
+            if (matchClickHandler != null) {
+                box.setOnMatchClicked(matchClickHandler);
+            }
             matchBoxes.put(pos.matchId(), box);
             getChildren().add(box);
         }

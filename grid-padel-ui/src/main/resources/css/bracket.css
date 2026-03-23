@@ -91,7 +91,7 @@
 }
 
 .toolbar-title {
-    -fx-font-size: 16px;
+    -fx-font-size: 14px;
     -fx-font-weight: bold;
     -fx-text-fill: white;
 }
@@ -99,6 +99,29 @@
 .toolbar-hint {
     -fx-font-size: 11px;
     -fx-text-fill: #90a4ae;
+}
+
+.toolbar-button {
+    -fx-background-color: #37474f;
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-padding: 5 12;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-cursor: hand;
+}
+
+.toolbar-button:hover {
+    -fx-background-color: #455a64;
+}
+
+.toolbar-button:pressed {
+    -fx-background-color: #546e7a;
+}
+
+/* === Match Box Hover === */
+.match-box:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 6, 0, 2, 2);
 }
 
 /* === Scroll Pane === */

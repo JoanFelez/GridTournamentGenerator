@@ -11,6 +11,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import java.time.format.DateTimeFormatter;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class MatchBoxView extends VBox {
@@ -32,6 +33,11 @@ public class MatchBoxView extends VBox {
 
         applyCssClasses();
         buildContent();
+        setCursor(javafx.scene.Cursor.HAND);
+    }
+
+    public void setOnMatchClicked(Consumer<Match> handler) {
+        setOnMouseClicked(e -> handler.accept(match));
     }
 
     public Match getMatch() {
