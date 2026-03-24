@@ -20,7 +20,6 @@ public class MatchResultDialog {
     public static Optional<ResultAction> show(Match match) {
         Dialog<ResultAction> dialog = new Dialog<>();
         dialog.setTitle("Enter Match Result");
-        dialog.setHeaderText("Enter the score for each set");
 
         ButtonType saveButton = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
         ButtonType woButton = new ButtonType("Walkover (W.O.)", ButtonBar.ButtonData.LEFT);
@@ -32,6 +31,12 @@ public class MatchResultDialog {
         grid.setVgap(10);
         grid.setPadding(new Insets(20, 20, 10, 20));
         grid.setAlignment(javafx.geometry.Pos.CENTER);
+
+        Label headerLabel = new Label("Enter the score for each set");
+        headerLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
+        headerLabel.setMaxWidth(Double.MAX_VALUE);
+        headerLabel.setAlignment(javafx.geometry.Pos.CENTER);
+        grid.add(headerLabel, 0, 0, 3, 1);
 
         String p1Name = match.pair1() != null ? match.pair1().displayName() : "Pair 1";
         String p2Name = match.pair2() != null ? match.pair2().displayName() : "Pair 2";
@@ -45,9 +50,9 @@ public class MatchResultDialog {
         p2Label.setMinWidth(120);
         p2Label.setAlignment(javafx.geometry.Pos.CENTER);
 
-        grid.add(new Label(""), 0, 0);
-        grid.add(p1Label, 1, 0);
-        grid.add(p2Label, 2, 0);
+        grid.add(new Label(""), 0, 1);
+        grid.add(p1Label, 1, 1);
+        grid.add(p2Label, 2, 1);
 
         @SuppressWarnings("unchecked")
         Spinner<Integer>[] p1Spinners = new Spinner[3];
@@ -59,7 +64,7 @@ public class MatchResultDialog {
                 .getOrElse(io.vavr.collection.List.empty());
 
         for (int i = 0; i < 3; i++) {
-            grid.add(new Label("Set " + (i + 1) + ":"), 0, i + 1);
+            grid.add(new Label("Set " + (i + 1) + ":"), 0, i + 2);
 
             int p1Val = i < existingSets.size() ? existingSets.get(i).pair1Games() : 0;
             int p2Val = i < existingSets.size() ? existingSets.get(i).pair2Games() : 0;
@@ -72,8 +77,8 @@ public class MatchResultDialog {
             GridPane.setHalignment(p1Spinners[i], javafx.geometry.HPos.CENTER);
             GridPane.setHalignment(p2Spinners[i], javafx.geometry.HPos.CENTER);
 
-            grid.add(p1Spinners[i], 1, i + 1);
-            grid.add(p2Spinners[i], 2, i + 1);
+            grid.add(p1Spinners[i], 1, i + 2);
+            grid.add(p2Spinners[i], 2, i + 2);
         }
 
         dialog.getDialogPane().setContent(grid);
