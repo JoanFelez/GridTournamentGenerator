@@ -5,6 +5,7 @@ import com.gridpadel.domain.model.*;
 import com.gridpadel.domain.model.vo.*;
 import com.gridpadel.domain.port.PairImportPort;
 import com.gridpadel.domain.repository.TournamentRepository;
+import com.gridpadel.domain.service.BracketEditService;
 import com.gridpadel.domain.service.BracketGenerationService;
 import com.gridpadel.domain.service.MatchAdvancementService;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,6 +39,7 @@ class TournamentServiceTest {
                 repository,
                 new BracketGenerationService(),
                 new MatchAdvancementService(),
+                new BracketEditService(),
                 java.util.List.of(csvImporter)
         );
     }

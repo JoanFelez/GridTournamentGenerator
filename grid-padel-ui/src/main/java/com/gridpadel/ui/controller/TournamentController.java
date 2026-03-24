@@ -6,6 +6,7 @@ import com.gridpadel.domain.model.Pair;
 import com.gridpadel.domain.model.Tournament;
 import com.gridpadel.ui.dialog.*;
 import com.gridpadel.ui.view.MainView;
+import com.gridpadel.domain.model.vo.BracketType;
 import io.vavr.collection.List;
 import io.vavr.control.Try;
 import javafx.scene.control.Alert;
@@ -98,6 +99,11 @@ public class TournamentController {
             return;
         }
 
+        boolean isR1Main = match.bracketType() == BracketType.MAIN
+                && match.roundNumber() == 1
+                && !match.isPlayed()
+                && !match.isByeMatch();
+
         Alert choiceAlert = new Alert(Alert.AlertType.CONFIRMATION);
         choiceAlert.setTitle("Match Action");
         choiceAlert.setHeaderText(buildMatchHeader(match));
@@ -106,14 +112,28 @@ public class TournamentController {
         ButtonType detailsBtn = new ButtonType("Edit Details");
         ButtonType cancelBtn = new ButtonType("Cancel", ButtonType.CANCEL.getButtonData());
 
-        choiceAlert.getButtonTypes().setAll(resultBtn, detailsBtn, cancelBtn);
-        choiceAlert.showAndWait().ifPresent(chosen -> {
-            if (chosen == resultBtn) {
-                showResultDialog(match);
-            } else if (chosen == detailsBtn) {
-                showMatchDetails(match);
-            }
-        });
+        if (isR1Main) {
+            ButtonType swapBtn = new ButtonType("Swap Pair");
+            choiceAlert.getButtonTypes().setAll(resultBtn, detailsBtn, swapBtn, cancelBtn);
+            choiceAlert.showAndWait().ifPresent(chosen -> {
+                if (chosen == resultBtn) {
+                    showResultDialog(match);
+                } else if (chosen == detailsBtn) {
+                    showMatchDetails(match);
+                } else if (chosen == swapBtn) {
+                    showSwapPairDialog(match);
+                }
+            });
+        } else {
+            choiceAlert.getButtonTypes().setAll(resultBtn, detailsBtn, cancelBtn);
+            choiceAlert.showAndWait().ifPresent(chosen -> {
+                if (chosen == resultBtn) {
+                    showResultDialog(match);
+                } else if (chosen == detailsBtn) {
+                    showMatchDetails(match);
+                }
+            });
+        }
     }
 
     public void showResultDialog(Match match) {
@@ -147,6 +167,24 @@ public class TournamentController {
                     refreshTournament();
                     refreshDisplay();
                 }).onFailure(e -> showError("Error updating match details", e.getMessage()))
+        );
+    }
+
+    public void showSwapPairDialog(Match match) {
+        if (currentTournament == null) return;
+
+        currentTournament.mainBracket().round(1).forEach(r1 ->
+                SwapPairDialog.show(match, r1).ifPresent(swap ->
+                        Try.run(() -> {
+                            tournamentService.swapDrawPairs(
+                                    currentTournament.id(),
+                                    swap.selectedPair().id(),
+                                    swap.targetPair().id());
+                            refreshTournament();
+                            refreshDisplay();
+                            showInfo("Swap Complete", "Pairs swapped successfully.");
+                        }).onFailure(e -> showError("Swap failed", e.getMessage()))
+                )
         );
     }
 
