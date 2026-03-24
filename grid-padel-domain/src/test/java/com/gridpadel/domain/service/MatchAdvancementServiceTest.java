@@ -348,16 +348,17 @@ class MatchAdvancementServiceTest {
     }
 
     @Test
-    void shouldNotRouteWalkoverLoserToConsolationInR1() {
+    void shouldRouteWalkoverLoserToConsolationInR1() {
         Tournament t = tournamentWith4Pairs();
         Match r1m0 = t.mainBracket().rounds().get(0).matchAt(0);
+        Pair woLoser = r1m0.pair2();
 
         advancementService.processMatchResult(t, r1m0.id(), MatchResult.walkover(2));
 
         Match consolationM0 = t.consolationBracket().rounds().get(0).matchAt(0);
         assertThat(consolationM0.pair1())
-                .as("W.O. loser should NOT go to consolation — they are eliminated")
-                .isNull();
+                .as("W.O. loser goes to consolation so their opponent gets guaranteed 2 matches")
+                .isEqualTo(woLoser);
     }
 
     @Test

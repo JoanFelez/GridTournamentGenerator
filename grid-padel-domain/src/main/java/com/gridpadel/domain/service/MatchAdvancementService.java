@@ -23,9 +23,7 @@ public class MatchAdvancementService {
         advanceWinner(tournament, match, winner);
 
         if (match.bracketType() == BracketType.MAIN && match.roundNumber() == 1) {
-            if (!result.isWalkover()) {
-                routeLoserToConsolation(tournament, match, loser);
-            }
+            routeLoserToConsolation(tournament, match, loser);
         }
 
         if (match.bracketType() == BracketType.MAIN && match.roundNumber() == 2) {
