@@ -13,6 +13,11 @@ public class MatchAdvancementService {
             throw new IllegalStateException("Cannot record result for incomplete match — both pairs must be set");
         }
 
+        // When overwriting an existing result, undo the previous advancement/routing first
+        if (match.isPlayed()) {
+            clearMatchResult(tournament, matchId);
+        }
+
         match.recordResult(result);
 
         Pair winner = match.winner().getOrElseThrow(() ->

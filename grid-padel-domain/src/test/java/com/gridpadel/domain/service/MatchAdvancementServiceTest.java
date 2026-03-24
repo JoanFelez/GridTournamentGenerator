@@ -224,6 +224,38 @@ class MatchAdvancementServiceTest {
         assertThat(r2m0.pair1()).isEqualTo(originalPair2);
     }
 
+    @Test
+    void shouldRemoveOldLoserFromConsolationWhenOverwritingResult() {
+        Tournament t = tournamentWith4Pairs();
+        Match r1m0 = t.mainBracket().rounds().get(0).matchAt(0);
+        Pair originalPair1 = r1m0.pair1();
+        Pair originalPair2 = r1m0.pair2();
+
+        // Record result: pair1 wins → pair2 goes to consolation
+        advancementService.processMatchResult(t, r1m0.id(), pair1WinsResult());
+
+        Match consolationM0 = t.consolationBracket().rounds().get(0).matchAt(0);
+        assertThat(pairIsInMatch(consolationM0, originalPair2))
+                .as("Loser should be in consolation after first result")
+                .isTrue();
+
+        // Overwrite result directly (without manual clear): pair2 wins now
+        advancementService.processMatchResult(t, r1m0.id(), pair2WinsResult());
+
+        // Old loser (pair2) should NOT be in consolation anymore — they won
+        assertThat(pairIsInMatch(consolationM0, originalPair2))
+                .as("Previous loser should be removed from consolation when result is overwritten")
+                .isFalse();
+        // New loser (pair1) should be in consolation
+        assertThat(pairIsInMatch(consolationM0, originalPair1))
+                .as("New loser should be routed to consolation")
+                .isTrue();
+
+        // Winner should be advanced correctly
+        Match r2m0 = t.mainBracket().rounds().get(1).matchAt(0);
+        assertThat(r2m0.pair1()).isEqualTo(originalPair2);
+    }
+
     // --- BYE consolation routing ---
 
     private Tournament tournamentWith6PairsAndByes() {
