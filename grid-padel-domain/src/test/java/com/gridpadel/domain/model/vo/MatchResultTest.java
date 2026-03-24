@@ -1,6 +1,7 @@
 package com.gridpadel.domain.model.vo;
 
 import com.gridpadel.domain.exception.DomainException;
+import com.gridpadel.domain.exception.ValidationException;
 
 import org.junit.jupiter.api.Test;
 
@@ -172,5 +173,38 @@ class MatchResultTest {
         io.vavr.collection.List<SetResult> appended = original.append(set(6, 0));
         assertThat(original).hasSize(2);
         assertThat(appended).hasSize(3);
+    }
+
+    // --- Walkover tests ---
+
+    @Test
+    void shouldCreateWalkoverResult() {
+        MatchResult wo = MatchResult.walkover(1);
+        assertThat(wo.isWalkover()).isTrue();
+        assertThat(wo.walkoverPosition()).isEqualTo(1);
+        assertThat(wo.winnerPosition()).isEqualTo(2);
+        assertThat(wo.loserPosition()).isEqualTo(1);
+        assertThat(wo.sets()).isEmpty();
+    }
+
+    @Test
+    void shouldCreateWalkoverForPair2() {
+        MatchResult wo = MatchResult.walkover(2);
+        assertThat(wo.winnerPosition()).isEqualTo(1);
+        assertThat(wo.loserPosition()).isEqualTo(2);
+    }
+
+    @Test
+    void shouldRejectInvalidWalkoverPosition() {
+        assertThatThrownBy(() -> MatchResult.walkover(0))
+                .isInstanceOf(ValidationException.class);
+        assertThatThrownBy(() -> MatchResult.walkover(3))
+                .isInstanceOf(ValidationException.class);
+    }
+
+    @Test
+    void shouldDisplayWalkoverToString() {
+        MatchResult wo = MatchResult.walkover(1);
+        assertThat(wo.toString()).contains("W.O.");
     }
 }

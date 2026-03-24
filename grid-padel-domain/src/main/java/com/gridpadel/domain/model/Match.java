@@ -78,6 +78,10 @@ public class Match implements DomainEntity {
         return (pair1 != null && pair1.isBye()) || (pair2 != null && pair2.isBye());
     }
 
+    public boolean isWalkover() {
+        return result != null && result.isWalkover();
+    }
+
     public Option<Pair> winner() {
         return Option.of(result).map(r -> r.winnerPosition() == 1 ? pair1 : pair2);
     }

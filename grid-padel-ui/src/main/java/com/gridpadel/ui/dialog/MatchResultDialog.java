@@ -23,8 +23,9 @@ public class MatchResultDialog {
         dialog.setHeaderText(buildHeaderText(match));
 
         ButtonType saveButton = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
+        ButtonType woButton = new ButtonType("Walkover (W.O.)", ButtonBar.ButtonData.LEFT);
         ButtonType clearButton = new ButtonType("Clear Result", ButtonBar.ButtonData.OTHER);
-        dialog.getDialogPane().getButtonTypes().addAll(saveButton, clearButton, ButtonType.CANCEL);
+        dialog.getDialogPane().getButtonTypes().addAll(saveButton, woButton, clearButton, ButtonType.CANCEL);
 
         GridPane grid = new GridPane();
         grid.setHgap(10);
@@ -43,6 +44,7 @@ public class MatchResultDialog {
         @SuppressWarnings("unchecked")
         Spinner<Integer>[] p2Spinners = new Spinner[3];
         io.vavr.collection.List<SetResult> existingSets = match.result()
+                .filter(r -> !r.isWalkover())
                 .map(MatchResult::sets)
                 .getOrElse(io.vavr.collection.List.empty());
 
@@ -75,6 +77,9 @@ public class MatchResultDialog {
                 if (sets.isEmpty()) return null;
                 return new SaveResult(MatchResult.of(sets));
             }
+            if (button == woButton) {
+                return showWalkoverDialog(match);
+            }
             if (button == clearButton) {
                 return new ClearResult();
             }
@@ -82,6 +87,23 @@ public class MatchResultDialog {
         });
 
         return dialog.showAndWait();
+    }
+
+    private static ResultAction showWalkoverDialog(Match match) {
+        String p1Name = match.pair1() != null ? match.pair1().displayName() : "Pair 1";
+        String p2Name = match.pair2() != null ? match.pair2().displayName() : "Pair 2";
+
+        ChoiceDialog<String> woDialog = new ChoiceDialog<>(p1Name, p1Name, p2Name);
+        woDialog.setTitle("Walkover");
+        woDialog.setHeaderText("Which pair can't play?");
+        woDialog.setContentText("Select the pair giving W.O.:");
+
+        return woDialog.showAndWait()
+                .map(selected -> {
+                    int position = selected.equals(p1Name) ? 1 : 2;
+                    return (ResultAction) new SaveResult(MatchResult.walkover(position));
+                })
+                .orElse(null);
     }
 
     private static String buildHeaderText(Match match) {

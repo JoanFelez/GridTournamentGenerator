@@ -18,12 +18,12 @@ public class MatchResultDtoMapper {
         java.util.List<SetResultDto> sets = result.sets()
                 .map(setResultDtoMapper::toDto)
                 .toJavaList();
-        return new MatchResultDto(sets);
+        return new MatchResultDto(sets, result.walkover(), result.walkoverPosition());
     }
 
     public MatchResult fromDto(MatchResultDto dto) {
         List<SetResult> sets = List.ofAll(dto.sets())
                 .map(setResultDtoMapper::fromDto);
-        return new MatchResult(sets);
+        return new MatchResult(sets, dto.walkover(), dto.walkoverPosition());
     }
 }
