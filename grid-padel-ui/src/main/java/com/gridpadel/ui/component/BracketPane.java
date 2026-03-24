@@ -202,25 +202,27 @@ public class BracketPane extends Pane {
             }
         }
 
-        // Main bracket header over R1
+        double boxCenter = BracketLayoutCalculator.MATCH_BOX_WIDTH / 2;
+
+        // Main bracket header over R1 (lowest roundNumber = first TreeMap entry)
         if (!mainRoundX.isEmpty()) {
-            double r1X = mainRoundX.values().iterator().next();
+            double r1X = mainRoundX.get(mainRoundX.keySet().iterator().next());
             Label mainLabel = new Label("MAIN BRACKET →");
             mainLabel.getStyleClass().add("bracket-label");
             mainLabel.getStyleClass().add("bracket-label-main");
-            mainLabel.setLayoutX(r1X + BracketLayoutCalculator.MATCH_BOX_WIDTH / 2 - 60);
-            mainLabel.setLayoutY(5);
+            mainLabel.setLayoutX(r1X + boxCenter - 60);
+            mainLabel.setLayoutY(8);
             getChildren().add(mainLabel);
         }
 
-        // Consolation bracket header over its R1 (nearest to center)
+        // Consolation bracket header over its R1 (max X = nearest to center)
         if (!consolRoundX.isEmpty()) {
-            double maxConsolX = consolRoundX.values().stream().mapToDouble(d -> d).max().orElse(0);
+            double consolR1X = consolRoundX.get(consolRoundX.keySet().iterator().next());
             Label consolLabel = new Label("← CONSOLATION BRACKET");
             consolLabel.getStyleClass().add("bracket-label");
             consolLabel.getStyleClass().add("bracket-label-consolation");
-            consolLabel.setLayoutX(maxConsolX + BracketLayoutCalculator.MATCH_BOX_WIDTH / 2 - 80);
-            consolLabel.setLayoutY(5);
+            consolLabel.setLayoutX(consolR1X + boxCenter - 80);
+            consolLabel.setLayoutY(8);
             getChildren().add(consolLabel);
         }
 
@@ -229,8 +231,8 @@ public class BracketPane extends Pane {
             String roundName = roundLabel(entry.getKey(), mainTotalRounds);
             Label lbl = new Label(roundName);
             lbl.getStyleClass().add("round-header");
-            lbl.setLayoutX(entry.getValue() + BracketLayoutCalculator.MATCH_BOX_WIDTH / 2 - 30);
-            lbl.setLayoutY(22);
+            lbl.setLayoutX(entry.getValue() + boxCenter - roundName.length() * 3.5);
+            lbl.setLayoutY(32);
             getChildren().add(lbl);
         }
 
@@ -240,8 +242,8 @@ public class BracketPane extends Pane {
             Label lbl = new Label(roundName);
             lbl.getStyleClass().add("round-header");
             lbl.getStyleClass().add("round-header-consolation");
-            lbl.setLayoutX(entry.getValue() + BracketLayoutCalculator.MATCH_BOX_WIDTH / 2 - 30);
-            lbl.setLayoutY(22);
+            lbl.setLayoutX(entry.getValue() + boxCenter - roundName.length() * 3.5);
+            lbl.setLayoutY(32);
             getChildren().add(lbl);
         }
     }

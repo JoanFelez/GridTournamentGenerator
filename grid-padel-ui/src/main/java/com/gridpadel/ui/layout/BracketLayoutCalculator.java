@@ -12,7 +12,7 @@ public class BracketLayoutCalculator {
     public static final double MATCH_BOX_HEIGHT = 80;
     public static final double COLUMN_GAP = 80;
     public static final double VERTICAL_GAP = 20;
-    public static final double PADDING = 40;
+    public static final double PADDING = 60;
 
     public BracketLayout calculate(Tournament tournament) {
         Bracket mainBracket = tournament.mainBracket();
