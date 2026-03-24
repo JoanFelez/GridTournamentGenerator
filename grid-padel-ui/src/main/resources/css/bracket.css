@@ -59,8 +59,10 @@
 
 /* === Details === */
 .match-details {
-    -fx-font-size: 9px;
-    -fx-text-fill: #777777;
+    -fx-font-size: 11px;
+    -fx-text-fill: #555555;
+    -fx-alignment: center;
+    -fx-padding: 2 0 0 0;
 }
 
 /* === Connector Lines === */

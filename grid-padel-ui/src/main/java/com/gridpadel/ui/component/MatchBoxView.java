@@ -64,6 +64,8 @@ public class MatchBoxView extends VBox {
         if (!details.isEmpty()) {
             Label detailsLabel = new Label(details);
             detailsLabel.getStyleClass().add("match-details");
+            detailsLabel.setMaxWidth(Double.MAX_VALUE);
+            detailsLabel.setAlignment(Pos.CENTER);
             getChildren().add(detailsLabel);
         }
     }
