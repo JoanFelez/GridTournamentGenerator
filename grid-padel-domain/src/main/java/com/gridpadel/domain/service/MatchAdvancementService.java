@@ -69,26 +69,8 @@ public class MatchAdvancementService {
         int consolationPosition = match.position() / 2;
         int consolationRound = 1;
 
-        if (consolation.round(consolationRound).isEmpty()) {
-            int numConsolationMatches = tournament.mainBracket().rounds().get(0).matchCount() / 2;
-            List<Match> matches = List.range(0, numConsolationMatches)
-                    .map(i -> Match.createEmpty(consolationRound, i, BracketType.CONSOLATION));
-            consolation.addRound(Round.of(consolationRound, matches, BracketType.CONSOLATION));
-
-            int matchesInRound = numConsolationMatches / 2;
-            int roundNum = 2;
-            while (matchesInRound >= 1) {
-                final int rn = roundNum;
-                List<Match> roundMatches = List.range(0, matchesInRound)
-                        .map(pos -> Match.createEmpty(rn, pos, BracketType.CONSOLATION));
-                consolation.addRound(Round.of(roundNum, roundMatches, BracketType.CONSOLATION));
-                matchesInRound /= 2;
-                roundNum++;
-            }
-        }
-
         Round consolationR1 = consolation.round(consolationRound).getOrElseThrow(() ->
-                new IllegalStateException("Consolation round 1 should exist"));
+                new IllegalStateException("Consolation round 1 should exist — generate bracket first"));
         Match consolationMatch = consolationR1.matchAt(consolationPosition);
 
         if (match.position() % 2 == 0) {

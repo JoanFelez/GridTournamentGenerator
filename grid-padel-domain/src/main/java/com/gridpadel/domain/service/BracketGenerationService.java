@@ -86,6 +86,24 @@ public class BracketGenerationService {
         }
 
         autoResolveByes(tournament.mainBracket());
+
+        generateConsolationBracket(tournament, numMatches);
+    }
+
+    private void generateConsolationBracket(Tournament tournament, int mainR1MatchCount) {
+        int numConsolationMatches = mainR1MatchCount / 2;
+        if (numConsolationMatches < 1) return;
+
+        int matchesInRound = numConsolationMatches;
+        int roundNum = 1;
+        while (matchesInRound >= 1) {
+            final int rn = roundNum;
+            List<Match> matches = List.range(0, matchesInRound)
+                    .map(pos -> Match.createEmpty(rn, pos, BracketType.CONSOLATION));
+            tournament.consolationBracket().addRound(Round.of(roundNum, matches, BracketType.CONSOLATION));
+            matchesInRound /= 2;
+            roundNum++;
+        }
     }
 
     private void autoResolveByes(Bracket bracket) {
