@@ -55,8 +55,8 @@ public class MatchBoxView extends VBox {
     }
 
     private void buildContent() {
-        HBox pair1Row = createPairRow(pairName(true), isWinner(true));
-        HBox pair2Row = createPairRow(pairName(false), isWinner(false));
+        HBox pair1Row = createPairRow(pairName(true), isWinner(true), true);
+        HBox pair2Row = createPairRow(pairName(false), isWinner(false), false);
 
         getChildren().addAll(pair1Row, createSeparator(), pair2Row);
 
@@ -70,7 +70,7 @@ public class MatchBoxView extends VBox {
         }
     }
 
-    private HBox createPairRow(String name, boolean winner) {
+    private HBox createPairRow(String name, boolean winner, boolean isPair1) {
         Label nameLabel = new Label(name);
         nameLabel.getStyleClass().add("pair-name");
         if (winner) {
@@ -83,7 +83,7 @@ public class MatchBoxView extends VBox {
         if (match.isPlayed()) {
             Region spacer = new Region();
             HBox.setHgrow(spacer, Priority.ALWAYS);
-            Label scoreLabel = new Label(buildScoreText(winner));
+            Label scoreLabel = new Label(buildScoreText(isPair1));
             scoreLabel.getStyleClass().add("match-score");
             row.getChildren().addAll(spacer, scoreLabel);
         }
