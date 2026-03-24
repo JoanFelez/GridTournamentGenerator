@@ -23,6 +23,7 @@ public class MainView extends BorderPane {
     private final BracketPane bracketPane;
     private final Group zoomGroup;
     private final Scale scaleTransform;
+    private final ScrollPane bracketScrollPane;
     private final Label titleLabel;
     private final VBox tournamentListBox;
     private double currentZoom = 1.0;
@@ -36,6 +37,7 @@ public class MainView extends BorderPane {
         zoomGroup.getTransforms().add(scaleTransform);
 
         ScrollPane scrollPane = new ScrollPane(zoomGroup);
+        this.bracketScrollPane = scrollPane;
         scrollPane.setPannable(true);
         scrollPane.setFitToWidth(false);
         scrollPane.setFitToHeight(false);
@@ -72,6 +74,31 @@ public class MainView extends BorderPane {
 
     public void displayTournament(Tournament tournament) {
         bracketPane.renderTournament(tournament);
+        scrollToFirstRound(tournament);
+    }
+
+    private void scrollToFirstRound(Tournament tournament) {
+        if (tournament.mainBracket().rounds().isEmpty()) return;
+
+        javafx.application.Platform.runLater(() -> {
+            double contentWidth = zoomGroup.getBoundsInLocal().getWidth() * currentZoom;
+            double viewportWidth = bracketScrollPane.getViewportBounds().getWidth();
+
+            if (contentWidth <= viewportWidth) return;
+
+            int consolationRounds = tournament.consolationBracket().rounds().size();
+            double r1CenterX;
+            if (consolationRounds == 0) {
+                r1CenterX = 60 + 110; // PADDING + half box width
+            } else {
+                r1CenterX = 60 + consolationRounds * (220 + 80) + 80 + 110;
+            }
+            r1CenterX *= currentZoom;
+
+            double hValue = (r1CenterX - viewportWidth / 2) / (contentWidth - viewportWidth);
+            hValue = Math.max(0, Math.min(1, hValue));
+            bracketScrollPane.setHvalue(hValue);
+        });
     }
 
     public void clearDisplay() {
