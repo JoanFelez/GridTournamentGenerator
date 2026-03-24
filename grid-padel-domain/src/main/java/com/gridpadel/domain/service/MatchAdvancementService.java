@@ -25,6 +25,10 @@ public class MatchAdvancementService {
         if (match.bracketType() == BracketType.MAIN && match.roundNumber() == 1) {
             routeLoserToConsolation(tournament, match, loser);
         }
+
+        if (match.bracketType() == BracketType.MAIN && match.roundNumber() == 2) {
+            routeByeAdvancedLoserToConsolation(tournament, match, loser);
+        }
     }
 
     public void clearMatchResult(Tournament tournament, MatchId matchId) {
@@ -33,6 +37,7 @@ public class MatchAdvancementService {
         if (!match.isPlayed()) return;
 
         Pair previousWinner = match.winner().getOrNull();
+        Pair previousLoser = match.loser().getOrNull();
 
         match.clearResult();
 
@@ -42,6 +47,10 @@ public class MatchAdvancementService {
 
         if (match.bracketType() == BracketType.MAIN && match.roundNumber() == 1) {
             removeFromConsolation(tournament, match);
+        }
+
+        if (match.bracketType() == BracketType.MAIN && match.roundNumber() == 2 && previousLoser != null) {
+            removeByeAdvancedLoserFromConsolation(tournament, match, previousLoser);
         }
     }
 
@@ -69,15 +78,8 @@ public class MatchAdvancementService {
         int consolationPosition = match.position() / 2;
         int consolationRound = 1;
 
-        if (consolation.round(consolationRound).isEmpty()) {
-            int numConsolationMatches = tournament.mainBracket().rounds().get(0).matchCount() / 2;
-            List<Match> matches = List.range(0, numConsolationMatches)
-                    .map(i -> Match.createEmpty(consolationRound, i, BracketType.CONSOLATION));
-            consolation.addRound(Round.of(consolationRound, matches, BracketType.CONSOLATION));
-        }
-
         Round consolationR1 = consolation.round(consolationRound).getOrElseThrow(() ->
-                new IllegalStateException("Consolation round 1 should exist"));
+                new IllegalStateException("Consolation round 1 should exist — generate bracket first"));
         Match consolationMatch = consolationR1.matchAt(consolationPosition);
 
         if (match.position() % 2 == 0) {
@@ -113,6 +115,64 @@ public class MatchAdvancementService {
         consolation.round(1).forEach(cr1 -> {
             Match consolationMatch = cr1.matchAt(consolationPosition);
             if (match.position() % 2 == 0) {
+                consolationMatch.setPair1(null);
+            } else {
+                consolationMatch.setPair2(null);
+            }
+        });
+    }
+
+    /**
+     * When a pair advanced via BYE in R1 and loses in R2, route them
+     * to the consolation slot that was left empty by their BYE.
+     */
+    private void routeByeAdvancedLoserToConsolation(Tournament tournament, Match match, Pair loser) {
+        Bracket main = tournament.mainBracket();
+        Round r1 = main.round(1).getOrElseThrow(() ->
+                new IllegalStateException("Main R1 should exist"));
+
+        int r1Position = loser.equals(match.pair1())
+                ? match.position() * 2
+                : match.position() * 2 + 1;
+
+        if (r1Position >= r1.matches().size()) return;
+
+        Match r1Match = r1.matchAt(r1Position);
+        if (!r1Match.isByeMatch()) return;
+
+        Bracket consolation = tournament.consolationBracket();
+        consolation.round(1).forEach(cr1 -> {
+            int consolationPosition = r1Position / 2;
+            Match consolationMatch = cr1.matchAt(consolationPosition);
+
+            if (r1Position % 2 == 0) {
+                consolationMatch.setPair1(loser);
+            } else {
+                consolationMatch.setPair2(loser);
+            }
+        });
+    }
+
+    private void removeByeAdvancedLoserFromConsolation(Tournament tournament, Match match, Pair loser) {
+        Bracket main = tournament.mainBracket();
+        Round r1 = main.round(1).getOrElseThrow(() ->
+                new IllegalStateException("Main R1 should exist"));
+
+        int r1Position = loser.equals(match.pair1())
+                ? match.position() * 2
+                : match.position() * 2 + 1;
+
+        if (r1Position >= r1.matches().size()) return;
+
+        Match r1Match = r1.matchAt(r1Position);
+        if (!r1Match.isByeMatch()) return;
+
+        Bracket consolation = tournament.consolationBracket();
+        consolation.round(1).forEach(cr1 -> {
+            int consolationPosition = r1Position / 2;
+            Match consolationMatch = cr1.matchAt(consolationPosition);
+
+            if (r1Position % 2 == 0) {
                 consolationMatch.setPair1(null);
             } else {
                 consolationMatch.setPair2(null);

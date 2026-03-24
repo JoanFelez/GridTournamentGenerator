@@ -224,6 +224,108 @@ class MatchAdvancementServiceTest {
         assertThat(r2m0.pair1()).isEqualTo(originalPair2);
     }
 
+    // --- BYE consolation routing ---
+
+    private Tournament tournamentWith6PairsAndByes() {
+        Tournament t = Tournament.create("BYE Test");
+        Pair s1 = Pair.create(PlayerName.of("S1a"), PlayerName.of("S1b"));
+        s1.assignSeed(1);
+        t.addPair(s1);
+        Pair s2 = Pair.create(PlayerName.of("S2a"), PlayerName.of("S2b"));
+        s2.assignSeed(2);
+        t.addPair(s2);
+        Pair s3 = Pair.create(PlayerName.of("S3a"), PlayerName.of("S3b"));
+        s3.assignSeed(3);
+        t.addPair(s3);
+        t.addPair(Pair.create(PlayerName.of("U1a"), PlayerName.of("U1b")));
+        t.addPair(Pair.create(PlayerName.of("U2a"), PlayerName.of("U2b")));
+        t.addPair(Pair.create(PlayerName.of("U3a"), PlayerName.of("U3b")));
+        bracketService.generateMainBracket(t);
+        return t;
+    }
+
+    @Test
+    void shouldRouteByeAdvancedLoserToConsolation() {
+        Tournament t = tournamentWith6PairsAndByes();
+
+        // Find BYE matches in R1
+        Round r1 = t.mainBracket().rounds().get(0);
+        Match byeMatch = r1.matches()
+                .filter(Match::isByeMatch)
+                .head();
+
+        Pair byeAdvancedPair = byeMatch.pair1().isBye() ? byeMatch.pair2() : byeMatch.pair1();
+
+        // Find the R2 match that this pair advanced to
+        Round r2 = t.mainBracket().rounds().get(1);
+        Match r2Match = r2.matches()
+                .filter(m -> (m.pair1() != null && m.pair1().equals(byeAdvancedPair)) ||
+                             (m.pair2() != null && m.pair2().equals(byeAdvancedPair)))
+                .head();
+
+        // Play non-BYE R1 matches first to fill R2
+        r1.matches()
+                .filter(m -> !m.isByeMatch())
+                .forEach(m -> advancementService.processMatchResult(t, m.id(), pair1WinsResult()));
+
+        // Now play R2 match — the bye-advanced pair loses
+        MatchResult losingResult = byeAdvancedPair.equals(r2Match.pair1())
+                ? pair2WinsResult()
+                : pair1WinsResult();
+        advancementService.processMatchResult(t, r2Match.id(), losingResult);
+
+        // The bye-advanced pair should now be in consolation R1
+        Round cr1 = t.consolationBracket().rounds().get(0);
+        boolean isInConsolation = cr1.matches()
+                .exists(m -> pairIsInMatch(m, byeAdvancedPair));
+        assertThat(isInConsolation)
+                .as("BYE-advanced pair that lost in R2 should be routed to consolation")
+                .isTrue();
+    }
+
+    @Test
+    void shouldClearByeAdvancedLoserFromConsolation() {
+        Tournament t = tournamentWith6PairsAndByes();
+
+        Round r1 = t.mainBracket().rounds().get(0);
+        Match byeMatch = r1.matches()
+                .filter(Match::isByeMatch)
+                .head();
+
+        Pair byeAdvancedPair = byeMatch.pair1().isBye() ? byeMatch.pair2() : byeMatch.pair1();
+
+        Round r2 = t.mainBracket().rounds().get(1);
+
+        // Play non-BYE R1 matches
+        r1.matches()
+                .filter(m -> !m.isByeMatch())
+                .forEach(m -> advancementService.processMatchResult(t, m.id(), pair1WinsResult()));
+
+        Match r2Match = r2.matches()
+                .filter(m -> (m.pair1() != null && m.pair1().equals(byeAdvancedPair)) ||
+                             (m.pair2() != null && m.pair2().equals(byeAdvancedPair)))
+                .head();
+
+        MatchResult losingResult = byeAdvancedPair.equals(r2Match.pair1())
+                ? pair2WinsResult()
+                : pair1WinsResult();
+        advancementService.processMatchResult(t, r2Match.id(), losingResult);
+
+        // Verify in consolation
+        Round cr1 = t.consolationBracket().rounds().get(0);
+        assertThat(cr1.matches().exists(m -> pairIsInMatch(m, byeAdvancedPair))).isTrue();
+
+        // Clear the result
+        advancementService.clearMatchResult(t, r2Match.id());
+
+        // Should be removed from consolation
+        boolean stillInConsolation = cr1.matches()
+                .exists(m -> pairIsInMatch(m, byeAdvancedPair));
+        assertThat(stillInConsolation)
+                .as("Cleared R2 result should remove BYE-advanced pair from consolation")
+                .isFalse();
+    }
+
     // --- Helpers ---
 
     private boolean pairIsInMatch(Match match, Pair pair) {

@@ -6,16 +6,20 @@ import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 public class PairManagementDialog {
 
     public record PairEntry(String player1, String player2, Integer seed, boolean isNew) {}
 
-    public static Optional<List<PairEntry>> show(List<Pair> existingPairs) {
+    public static Optional<List<PairEntry>> show(List<Pair> existingPairs,
+                                                  Function<File, List<PairEntry>> importParser) {
         Dialog<List<PairEntry>> dialog = new Dialog<>();
         dialog.setTitle("Manage Pairs");
         dialog.setHeaderText("Add, edit, or remove pairs (max 32)");
@@ -52,6 +56,7 @@ public class PairManagementDialog {
         Button addBtn = new Button("Add Pair");
         Button editBtn = new Button("Edit");
         Button removeBtn = new Button("Remove");
+        Button importBtn = new Button("Import CSV/XLS");
 
         addBtn.setOnAction(e -> {
             if (listView.getItems().size() >= 32) {
@@ -75,7 +80,32 @@ public class PairManagementDialog {
             if (idx >= 0) listView.getItems().remove(idx);
         });
 
-        HBox buttons = new HBox(10, addBtn, editBtn, removeBtn);
+        importBtn.setOnAction(e -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Import Pairs from File");
+            fileChooser.getExtensionFilters().addAll(
+                    new FileChooser.ExtensionFilter("All Supported", "*.csv", "*.xls", "*.xlsx"),
+                    new FileChooser.ExtensionFilter("CSV Files", "*.csv"),
+                    new FileChooser.ExtensionFilter("Excel Files", "*.xls", "*.xlsx")
+            );
+            File file = fileChooser.showOpenDialog(dialog.getDialogPane().getScene().getWindow());
+            if (file != null) {
+                try {
+                    List<PairEntry> imported = importParser.apply(file);
+                    int remaining = 32 - listView.getItems().size();
+                    if (imported.size() > remaining) {
+                        showAlert("Only " + remaining + " more pair(s) can be added (max 32). "
+                                + "Importing the first " + remaining + " from the file.");
+                        imported = imported.subList(0, remaining);
+                    }
+                    listView.getItems().addAll(imported);
+                } catch (Exception ex) {
+                    showAlert("Import error: " + ex.getMessage());
+                }
+            }
+        });
+
+        HBox buttons = new HBox(10, addBtn, editBtn, removeBtn, importBtn);
         buttons.setPadding(new Insets(5, 0, 0, 0));
 
         VBox content = new VBox(10, listView, buttons);

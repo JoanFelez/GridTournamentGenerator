@@ -4,13 +4,17 @@ import com.gridpadel.domain.model.Match;
 import com.gridpadel.domain.model.Pair;
 import com.gridpadel.domain.model.Tournament;
 import com.gridpadel.domain.model.vo.*;
+import com.gridpadel.domain.port.PairImportPort;
+import com.gridpadel.domain.port.PairImportPort.ImportedPair;
 import com.gridpadel.domain.repository.TournamentRepository;
 import com.gridpadel.domain.service.BracketGenerationService;
 import com.gridpadel.domain.service.MatchAdvancementService;
 import io.vavr.collection.List;
+import io.vavr.control.Try;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.io.InputStream;
 import java.time.LocalDateTime;
 
 @Service
@@ -20,6 +24,7 @@ public class TournamentService implements ApplicationService {
     private final TournamentRepository repository;
     private final BracketGenerationService bracketGenerationService;
     private final MatchAdvancementService matchAdvancementService;
+    private final java.util.List<PairImportPort> importers;
 
     public Tournament createTournament(String name) {
         Tournament tournament = Tournament.create(name);
@@ -99,6 +104,15 @@ public class TournamentService implements ApplicationService {
         Match match = findMatch(tournament, matchId);
         match.setDateTime(MatchDateTime.of(dateTime));
         repository.save(tournament);
+    }
+
+    public Try<List<ImportedPair>> parsePairsFromFile(InputStream inputStream, String fileExtension) {
+        PairImportPort importer = List.ofAll(importers)
+                .find(i -> i.supports(fileExtension))
+                .getOrElseThrow(() -> new IllegalArgumentException(
+                        "Unsupported file format: " + fileExtension + ". Supported formats: CSV, XLS, XLSX"));
+
+        return importer.importPairs(inputStream);
     }
 
     private Match findMatch(Tournament tournament, MatchId matchId) {

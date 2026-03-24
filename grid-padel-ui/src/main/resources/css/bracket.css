@@ -59,8 +59,10 @@
 
 /* === Details === */
 .match-details {
-    -fx-font-size: 9px;
-    -fx-text-fill: #777777;
+    -fx-font-size: 11px;
+    -fx-text-fill: #555555;
+    -fx-alignment: center;
+    -fx-padding: 2 0 0 0;
 }
 
 /* === Connector Lines === */
@@ -81,6 +83,17 @@
 }
 
 .bracket-label-consolation {
+    -fx-text-fill: #c62828;
+}
+
+/* === Round Headers === */
+.round-header {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1565c0;
+}
+
+.round-header-consolation {
     -fx-text-fill: #c62828;
 }
 
@@ -131,4 +144,100 @@
 
 .bracket-scroll .viewport {
     -fx-background-color: #f5f5f5;
+}
+
+/* === Sidebar === */
+.sidebar {
+    -fx-background-color: #1e272e;
+    -fx-border-color: #37474f;
+    -fx-border-width: 0 1 0 0;
+}
+
+.sidebar-header {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #ecf0f1;
+    -fx-padding: 4 0 8 4;
+}
+
+.sidebar-scroll {
+    -fx-background: #1e272e;
+    -fx-background-color: #1e272e;
+}
+
+.sidebar-scroll .viewport {
+    -fx-background-color: #1e272e;
+}
+
+.sidebar-item {
+    -fx-font-size: 13px;
+    -fx-text-fill: #b0bec5;
+    -fx-padding: 8 10;
+    -fx-background-radius: 4;
+    -fx-cursor: hand;
+}
+
+.sidebar-item:hover {
+    -fx-background-color: #37474f;
+    -fx-text-fill: white;
+}
+
+.sidebar-item-active {
+    -fx-background-color: #1565c0;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.sidebar-empty {
+    -fx-font-size: 12px;
+    -fx-text-fill: #78909c;
+    -fx-padding: 10 4;
+    -fx-font-style: italic;
+}
+
+/* === Welcome View === */
+.welcome-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #263238;
+    -fx-padding: 0 0 4 0;
+}
+
+.welcome-subtitle {
+    -fx-font-size: 15px;
+    -fx-text-fill: #607d8b;
+}
+
+.welcome-empty {
+    -fx-font-size: 14px;
+    -fx-text-fill: #78909c;
+    -fx-text-alignment: center;
+    -fx-padding: 20 0 0 0;
+    -fx-line-spacing: 4;
+}
+
+.welcome-card {
+    -fx-background-color: white;
+    -fx-border-color: #cfd8dc;
+    -fx-border-width: 1.5;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 4, 0, 1, 2);
+    -fx-cursor: hand;
+}
+
+.welcome-card:hover {
+    -fx-border-color: #1565c0;
+    -fx-effect: dropshadow(three-pass-box, rgba(21,101,192,0.25), 8, 0, 0, 2);
+}
+
+.welcome-card-name {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #263238;
+}
+
+.welcome-card-detail {
+    -fx-font-size: 12px;
+    -fx-text-fill: #607d8b;
 }

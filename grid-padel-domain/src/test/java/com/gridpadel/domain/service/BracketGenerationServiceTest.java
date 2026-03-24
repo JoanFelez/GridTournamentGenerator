@@ -250,11 +250,14 @@ class BracketGenerationServiceTest {
     }
 
     @Test
-    void shouldNotGenerateConsolationBracketYet() {
+    void shouldGenerateConsolationBracketAtGenerationTime() {
         Tournament t = tournamentWithPairs(8);
         service.generateMainBracket(t);
 
-        assertThat(t.consolationBracket().rounds()).isEmpty();
+        // 8 pairs → 4 main R1 matches → 2 consolation R1 matches → 1 consolation final
+        assertThat(t.consolationBracket().rounds()).hasSize(2);
+        assertThat(t.consolationBracket().rounds().get(0).matchCount()).isEqualTo(2);
+        assertThat(t.consolationBracket().rounds().get(1).matchCount()).isEqualTo(1);
     }
 
     @Test
