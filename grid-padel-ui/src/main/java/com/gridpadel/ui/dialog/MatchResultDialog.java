@@ -20,7 +20,7 @@ public class MatchResultDialog {
     public static Optional<ResultAction> show(Match match) {
         Dialog<ResultAction> dialog = new Dialog<>();
         dialog.setTitle("Enter Match Result");
-        dialog.setHeaderText(buildHeaderText(match));
+        dialog.setHeaderText("Enter the score for each set");
 
         ButtonType saveButton = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
         ButtonType woButton = new ButtonType("Walkover (W.O.)", ButtonBar.ButtonData.LEFT);
@@ -30,17 +30,20 @@ public class MatchResultDialog {
         GridPane grid = new GridPane();
         grid.setHgap(30);
         grid.setVgap(10);
-        grid.setPadding(new Insets(20, 40, 10, 10));
+        grid.setPadding(new Insets(20, 20, 10, 20));
+        grid.setAlignment(javafx.geometry.Pos.CENTER);
 
         String p1Name = match.pair1() != null ? match.pair1().displayName() : "Pair 1";
         String p2Name = match.pair2() != null ? match.pair2().displayName() : "Pair 2";
 
         Label p1Label = new Label(p1Name);
-        p1Label.setMinWidth(150);
-        p1Label.setMaxWidth(250);
+        p1Label.setStyle("-fx-font-weight: bold;");
+        p1Label.setMinWidth(120);
+        p1Label.setAlignment(javafx.geometry.Pos.CENTER);
         Label p2Label = new Label(p2Name);
-        p2Label.setMinWidth(150);
-        p2Label.setMaxWidth(250);
+        p2Label.setStyle("-fx-font-weight: bold;");
+        p2Label.setMinWidth(120);
+        p2Label.setAlignment(javafx.geometry.Pos.CENTER);
 
         grid.add(new Label(""), 0, 0);
         grid.add(p1Label, 1, 0);
@@ -65,6 +68,9 @@ public class MatchResultDialog {
             p1Spinners[i].setPrefWidth(70);
             p2Spinners[i] = new Spinner<>(0, 7, p2Val);
             p2Spinners[i].setPrefWidth(70);
+
+            GridPane.setHalignment(p1Spinners[i], javafx.geometry.HPos.CENTER);
+            GridPane.setHalignment(p2Spinners[i], javafx.geometry.HPos.CENTER);
 
             grid.add(p1Spinners[i], 1, i + 1);
             grid.add(p2Spinners[i], 2, i + 1);
