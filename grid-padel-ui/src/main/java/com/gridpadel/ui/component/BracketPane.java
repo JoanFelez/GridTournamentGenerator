@@ -188,62 +188,73 @@ public class BracketPane extends Pane {
 
     private void addBracketLabels(BracketLayout layout) {
         java.util.Map<Integer, Double> mainRoundX = new java.util.TreeMap<>();
+        java.util.Map<Integer, Double> mainRoundMinY = new java.util.TreeMap<>();
         java.util.Map<Integer, Double> consolRoundX = new java.util.TreeMap<>();
+        java.util.Map<Integer, Double> consolRoundMinY = new java.util.TreeMap<>();
         int mainTotalRounds = 0;
         int consolTotalRounds = 0;
 
         for (MatchPosition p : layout.matchPositions()) {
             if (p.isConsolation()) {
                 consolRoundX.merge(p.roundNumber(), p.x(), Math::min);
+                consolRoundMinY.merge(p.roundNumber(), p.y(), Math::min);
                 consolTotalRounds = Math.max(consolTotalRounds, p.roundNumber());
             } else {
                 mainRoundX.merge(p.roundNumber(), p.x(), Math::min);
+                mainRoundMinY.merge(p.roundNumber(), p.y(), Math::min);
                 mainTotalRounds = Math.max(mainTotalRounds, p.roundNumber());
             }
         }
 
         double boxCenter = BracketLayoutCalculator.MATCH_BOX_WIDTH / 2;
+        double headerOffset = 18;
 
-        // Main bracket header over R1 (lowest roundNumber = first TreeMap entry)
+        // Main bracket header over R1
         if (!mainRoundX.isEmpty()) {
-            double r1X = mainRoundX.get(mainRoundX.keySet().iterator().next());
+            int firstKey = mainRoundX.keySet().iterator().next();
+            double r1X = mainRoundX.get(firstKey);
+            double r1Y = mainRoundMinY.get(firstKey);
             Label mainLabel = new Label("MAIN BRACKET →");
             mainLabel.getStyleClass().add("bracket-label");
             mainLabel.getStyleClass().add("bracket-label-main");
             mainLabel.setLayoutX(r1X + boxCenter - 60);
-            mainLabel.setLayoutY(8);
+            mainLabel.setLayoutY(r1Y - 36);
             getChildren().add(mainLabel);
         }
 
-        // Consolation bracket header over its R1 (max X = nearest to center)
+        // Consolation bracket header over its R1
         if (!consolRoundX.isEmpty()) {
-            double consolR1X = consolRoundX.get(consolRoundX.keySet().iterator().next());
+            int firstKey = consolRoundX.keySet().iterator().next();
+            double consolR1X = consolRoundX.get(firstKey);
+            double consolR1Y = consolRoundMinY.get(firstKey);
             Label consolLabel = new Label("← CONSOLATION BRACKET");
             consolLabel.getStyleClass().add("bracket-label");
             consolLabel.getStyleClass().add("bracket-label-consolation");
             consolLabel.setLayoutX(consolR1X + boxCenter - 80);
-            consolLabel.setLayoutY(8);
+            consolLabel.setLayoutY(consolR1Y - 36);
             getChildren().add(consolLabel);
         }
 
-        // Round headers for main bracket
+        // Round headers for main bracket — positioned above each round's top card
         for (var entry : mainRoundX.entrySet()) {
             String roundName = roundLabel(entry.getKey(), mainTotalRounds);
+            double topY = mainRoundMinY.get(entry.getKey());
             Label lbl = new Label(roundName);
             lbl.getStyleClass().add("round-header");
             lbl.setLayoutX(entry.getValue() + boxCenter - roundName.length() * 3.5);
-            lbl.setLayoutY(32);
+            lbl.setLayoutY(topY - headerOffset);
             getChildren().add(lbl);
         }
 
-        // Round headers for consolation bracket
+        // Round headers for consolation bracket — positioned above each round's top card
         for (var entry : consolRoundX.entrySet()) {
             String roundName = roundLabel(entry.getKey(), consolTotalRounds);
+            double topY = consolRoundMinY.get(entry.getKey());
             Label lbl = new Label(roundName);
             lbl.getStyleClass().add("round-header");
             lbl.getStyleClass().add("round-header-consolation");
             lbl.setLayoutX(entry.getValue() + boxCenter - roundName.length() * 3.5);
-            lbl.setLayoutY(32);
+            lbl.setLayoutY(topY - headerOffset);
             getChildren().add(lbl);
         }
     }
