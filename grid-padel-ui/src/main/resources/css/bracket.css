@@ -132,3 +132,52 @@
 .bracket-scroll .viewport {
     -fx-background-color: #f5f5f5;
 }
+
+/* === Sidebar === */
+.sidebar {
+    -fx-background-color: #1e272e;
+    -fx-border-color: #37474f;
+    -fx-border-width: 0 1 0 0;
+}
+
+.sidebar-header {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #ecf0f1;
+    -fx-padding: 4 0 8 4;
+}
+
+.sidebar-scroll {
+    -fx-background: #1e272e;
+    -fx-background-color: #1e272e;
+}
+
+.sidebar-scroll .viewport {
+    -fx-background-color: #1e272e;
+}
+
+.sidebar-item {
+    -fx-font-size: 13px;
+    -fx-text-fill: #b0bec5;
+    -fx-padding: 8 10;
+    -fx-background-radius: 4;
+    -fx-cursor: hand;
+}
+
+.sidebar-item:hover {
+    -fx-background-color: #37474f;
+    -fx-text-fill: white;
+}
+
+.sidebar-item-active {
+    -fx-background-color: #1565c0;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.sidebar-empty {
+    -fx-font-size: 12px;
+    -fx-text-fill: #78909c;
+    -fx-padding: 10 4;
+    -fx-font-style: italic;
+}

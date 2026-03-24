@@ -4,18 +4,14 @@ import com.gridpadel.domain.model.Tournament;
 import com.gridpadel.ui.component.BracketPane;
 import com.gridpadel.ui.controller.TournamentController;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Group;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Separator;
+import javafx.scene.control.*;
 import javafx.scene.input.ScrollEvent;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
+import javafx.scene.layout.*;
 import javafx.scene.transform.Scale;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 public class MainView extends BorderPane {
@@ -28,6 +24,7 @@ public class MainView extends BorderPane {
     private final Group zoomGroup;
     private final Scale scaleTransform;
     private final Label titleLabel;
+    private final VBox tournamentListBox;
     private double currentZoom = 1.0;
 
     private TournamentController controller;
@@ -55,8 +52,12 @@ public class MainView extends BorderPane {
         titleLabel = new Label("Grid Padel Tournament Generator");
         titleLabel.getStyleClass().add("toolbar-title");
 
+        tournamentListBox = new VBox(4);
+        VBox sidebar = createSidebar();
+
         setCenter(scrollPane);
         setTop(createToolbar());
+        setLeft(sidebar);
 
         getStylesheets().add(getClass().getResource("/css/bracket.css").toExternalForm());
     }
@@ -65,6 +66,7 @@ public class MainView extends BorderPane {
         this.controller = controller;
         controller.setMainView(this);
         bracketPane.setMatchClickHandler(match -> controller.onMatchClicked(match));
+        controller.refreshTournamentList();
     }
 
     public void displayTournament(Tournament tournament) {
@@ -80,6 +82,35 @@ public class MainView extends BorderPane {
         titleLabel.setText("Grid Padel — " + tournamentName);
     }
 
+    public void updateTournamentList(List<Tournament> tournaments) {
+        tournamentListBox.getChildren().clear();
+
+        if (tournaments.isEmpty()) {
+            Label empty = new Label("No tournaments yet");
+            empty.getStyleClass().add("sidebar-empty");
+            tournamentListBox.getChildren().add(empty);
+            return;
+        }
+
+        Tournament current = controller != null ? controller.currentTournament() : null;
+        for (Tournament t : tournaments) {
+            Label item = new Label(t.name());
+            item.getStyleClass().add("sidebar-item");
+            item.setMaxWidth(Double.MAX_VALUE);
+            if (current != null && current.id().equals(t.id())) {
+                item.getStyleClass().add("sidebar-item-active");
+            }
+            String pairInfo = t.pairCount() + " pairs";
+            boolean hasBracket = !t.mainBracket().rounds().isEmpty();
+            if (hasBracket) pairInfo += " • bracket";
+            item.setTooltip(new Tooltip(pairInfo));
+            item.setOnMouseClicked(e -> {
+                if (controller != null) controller.openTournament(t);
+            });
+            tournamentListBox.getChildren().add(item);
+        }
+    }
+
     public void zoom(double delta) {
         currentZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, currentZoom + delta));
         scaleTransform.setX(currentZoom);
@@ -92,9 +123,26 @@ public class MainView extends BorderPane {
         scaleTransform.setY(1.0);
     }
 
+    private VBox createSidebar() {
+        Label header = new Label("Tournaments");
+        header.getStyleClass().add("sidebar-header");
+
+        ScrollPane listScroll = new ScrollPane(tournamentListBox);
+        listScroll.setFitToWidth(true);
+        listScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        listScroll.getStyleClass().add("sidebar-scroll");
+        VBox.setVgrow(listScroll, Priority.ALWAYS);
+
+        VBox sidebar = new VBox(8, header, listScroll);
+        sidebar.getStyleClass().add("sidebar");
+        sidebar.setPrefWidth(200);
+        sidebar.setMinWidth(160);
+        sidebar.setPadding(new Insets(10));
+        return sidebar;
+    }
+
     private HBox createToolbar() {
         Button newBtn = createButton("🆕 New", e -> { if (controller != null) controller.createNewTournament(); });
-        Button openBtn = createButton("📂 Open", e -> { if (controller != null) controller.openTournamentHistory(); });
         Button saveBtn = createButton("💾 Save", e -> { if (controller != null) controller.saveTournament(); });
         Button editBtn = createButton("✏️ Rename", e -> { if (controller != null) controller.editTournamentName(); });
         Button pairsBtn = createButton("👥 Pairs", e -> { if (controller != null) controller.managePairs(); });
@@ -107,7 +155,7 @@ public class MainView extends BorderPane {
         zoomInfo.getStyleClass().add("toolbar-hint");
 
         HBox toolbar = new HBox(8,
-                newBtn, openBtn, saveBtn,
+                newBtn, saveBtn,
                 new Separator(javafx.geometry.Orientation.VERTICAL),
                 editBtn, pairsBtn, generateBtn,
                 spacer,
@@ -117,7 +165,7 @@ public class MainView extends BorderPane {
         );
         toolbar.getStyleClass().add("toolbar");
         toolbar.setPadding(new Insets(8, 15, 8, 15));
-        toolbar.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        toolbar.setAlignment(Pos.CENTER_LEFT);
         return toolbar;
     }
 

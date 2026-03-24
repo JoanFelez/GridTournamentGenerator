@@ -34,6 +34,7 @@ public class TournamentController {
                 Try.run(() -> {
                     currentTournament = tournamentService.createTournament(data.name());
                     mainView.updateTitle(currentTournament.name());
+                    refreshTournamentList();
                     managePairs();
                 }).onFailure(e -> showError("Error creating tournament", e.getMessage()))
         );
@@ -46,6 +47,7 @@ public class TournamentController {
                     tournamentService.updateTournamentName(currentTournament.id(), data.name());
                     refreshTournament();
                     mainView.updateTitle(currentTournament.name());
+                    refreshTournamentList();
                 }).onFailure(e -> showError("Error updating tournament", e.getMessage()))
         );
     }
@@ -57,6 +59,7 @@ public class TournamentController {
                     syncPairs(entries);
                     refreshTournament();
                     refreshDisplay();
+                    refreshTournamentList();
                 }).onFailure(e -> showError("Error managing pairs", e.getMessage()))
         );
     }
@@ -147,6 +150,19 @@ public class TournamentController {
         );
     }
 
+    public void openTournament(Tournament tournament) {
+        currentTournament = tournamentService.getTournament(tournament.id());
+        mainView.updateTitle(currentTournament.name());
+        refreshDisplay();
+        refreshTournamentList();
+    }
+
+    public void refreshTournamentList() {
+        Try.of(() -> tournamentService.listTournaments())
+                .onSuccess(tournaments -> mainView.updateTournamentList(tournaments.toJavaList()))
+                .onFailure(e -> showError("Error loading tournaments", e.getMessage()));
+    }
+
     public void openTournamentHistory() {
         Try.of(() -> tournamentService.listTournaments())
                 .onSuccess(tournaments -> {
@@ -156,11 +172,7 @@ public class TournamentController {
                     }
                     TournamentHistoryDialog.show(tournaments.toJavaList()).ifPresent(result -> {
                         switch (result.action()) {
-                            case OPEN -> {
-                                currentTournament = result.tournament();
-                                mainView.updateTitle(currentTournament.name());
-                                refreshDisplay();
-                            }
+                            case OPEN -> openTournament(result.tournament());
                             case DELETE -> {
                                 Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
                                         "Delete tournament '" + result.tournament().name() + "'?");
@@ -171,6 +183,7 @@ public class TournamentController {
                                         currentTournament = null;
                                         mainView.clearDisplay();
                                     }
+                                    refreshTournamentList();
                                 });
                             }
                         }
