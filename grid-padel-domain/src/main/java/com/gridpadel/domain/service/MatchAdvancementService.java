@@ -74,6 +74,17 @@ public class MatchAdvancementService {
             List<Match> matches = List.range(0, numConsolationMatches)
                     .map(i -> Match.createEmpty(consolationRound, i, BracketType.CONSOLATION));
             consolation.addRound(Round.of(consolationRound, matches, BracketType.CONSOLATION));
+
+            int matchesInRound = numConsolationMatches / 2;
+            int roundNum = 2;
+            while (matchesInRound >= 1) {
+                final int rn = roundNum;
+                List<Match> roundMatches = List.range(0, matchesInRound)
+                        .map(pos -> Match.createEmpty(rn, pos, BracketType.CONSOLATION));
+                consolation.addRound(Round.of(roundNum, roundMatches, BracketType.CONSOLATION));
+                matchesInRound /= 2;
+                roundNum++;
+            }
         }
 
         Round consolationR1 = consolation.round(consolationRound).getOrElseThrow(() ->
