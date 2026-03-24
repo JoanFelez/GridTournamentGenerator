@@ -86,6 +86,17 @@
     -fx-text-fill: #c62828;
 }
 
+/* === Round Headers === */
+.round-header {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1565c0;
+}
+
+.round-header-consolation {
+    -fx-text-fill: #c62828;
+}
+
 /* === Toolbar === */
 .toolbar {
     -fx-background-color: #263238;

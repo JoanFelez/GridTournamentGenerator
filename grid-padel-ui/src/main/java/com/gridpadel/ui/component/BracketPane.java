@@ -187,35 +187,75 @@ public class BracketPane extends Pane {
     }
 
     private void addBracketLabels(BracketLayout layout) {
-        boolean hasMain = layout.matchPositions().stream().anyMatch(p -> !p.isConsolation());
-        boolean hasConsolation = layout.matchPositions().stream().anyMatch(MatchPosition::isConsolation);
+        java.util.Map<Integer, Double> mainRoundX = new java.util.TreeMap<>();
+        java.util.Map<Integer, Double> consolRoundX = new java.util.TreeMap<>();
+        int mainTotalRounds = 0;
+        int consolTotalRounds = 0;
 
-        if (hasMain) {
+        for (MatchPosition p : layout.matchPositions()) {
+            if (p.isConsolation()) {
+                consolRoundX.merge(p.roundNumber(), p.x(), Math::min);
+                consolTotalRounds = Math.max(consolTotalRounds, p.roundNumber());
+            } else {
+                mainRoundX.merge(p.roundNumber(), p.x(), Math::min);
+                mainTotalRounds = Math.max(mainTotalRounds, p.roundNumber());
+            }
+        }
+
+        // Main bracket header over R1
+        if (!mainRoundX.isEmpty()) {
+            double r1X = mainRoundX.values().iterator().next();
             Label mainLabel = new Label("MAIN BRACKET →");
             mainLabel.getStyleClass().add("bracket-label");
             mainLabel.getStyleClass().add("bracket-label-main");
-
-            double minMainX = layout.matchPositions().stream()
-                    .filter(p -> !p.isConsolation())
-                    .mapToDouble(MatchPosition::x)
-                    .min().orElse(0);
-            mainLabel.setLayoutX(minMainX + BracketLayoutCalculator.MATCH_BOX_WIDTH / 2 - 60);
+            mainLabel.setLayoutX(r1X + BracketLayoutCalculator.MATCH_BOX_WIDTH / 2 - 60);
             mainLabel.setLayoutY(5);
             getChildren().add(mainLabel);
         }
 
-        if (hasConsolation) {
+        // Consolation bracket header over its R1 (nearest to center)
+        if (!consolRoundX.isEmpty()) {
+            double maxConsolX = consolRoundX.values().stream().mapToDouble(d -> d).max().orElse(0);
             Label consolLabel = new Label("← CONSOLATION BRACKET");
             consolLabel.getStyleClass().add("bracket-label");
             consolLabel.getStyleClass().add("bracket-label-consolation");
-
-            double maxConsolX = layout.matchPositions().stream()
-                    .filter(MatchPosition::isConsolation)
-                    .mapToDouble(MatchPosition::x)
-                    .max().orElse(0);
             consolLabel.setLayoutX(maxConsolX + BracketLayoutCalculator.MATCH_BOX_WIDTH / 2 - 80);
             consolLabel.setLayoutY(5);
             getChildren().add(consolLabel);
         }
+
+        // Round headers for main bracket
+        for (var entry : mainRoundX.entrySet()) {
+            String roundName = roundLabel(entry.getKey(), mainTotalRounds);
+            Label lbl = new Label(roundName);
+            lbl.getStyleClass().add("round-header");
+            lbl.setLayoutX(entry.getValue() + BracketLayoutCalculator.MATCH_BOX_WIDTH / 2 - 30);
+            lbl.setLayoutY(22);
+            getChildren().add(lbl);
+        }
+
+        // Round headers for consolation bracket
+        for (var entry : consolRoundX.entrySet()) {
+            String roundName = roundLabel(entry.getKey(), consolTotalRounds);
+            Label lbl = new Label(roundName);
+            lbl.getStyleClass().add("round-header");
+            lbl.getStyleClass().add("round-header-consolation");
+            lbl.setLayoutX(entry.getValue() + BracketLayoutCalculator.MATCH_BOX_WIDTH / 2 - 30);
+            lbl.setLayoutY(22);
+            getChildren().add(lbl);
+        }
+    }
+
+    private String roundLabel(int roundNumber, int totalRounds) {
+        int fromFinal = totalRounds - roundNumber;
+        return switch (fromFinal) {
+            case 0 -> "Final";
+            case 1 -> "Semifinal";
+            case 2 -> "1/4";
+            case 3 -> "1/8";
+            case 4 -> "1/16";
+            case 5 -> "1/32";
+            default -> "R" + roundNumber;
+        };
     }
 }
