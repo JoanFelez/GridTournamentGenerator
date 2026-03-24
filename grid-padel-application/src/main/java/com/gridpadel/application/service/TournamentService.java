@@ -7,6 +7,7 @@ import com.gridpadel.domain.model.vo.*;
 import com.gridpadel.domain.port.PairImportPort;
 import com.gridpadel.domain.port.PairImportPort.ImportedPair;
 import com.gridpadel.domain.repository.TournamentRepository;
+import com.gridpadel.domain.service.BracketEditService;
 import com.gridpadel.domain.service.BracketGenerationService;
 import com.gridpadel.domain.service.MatchAdvancementService;
 import io.vavr.collection.List;
@@ -24,6 +25,7 @@ public class TournamentService implements ApplicationService {
     private final TournamentRepository repository;
     private final BracketGenerationService bracketGenerationService;
     private final MatchAdvancementService matchAdvancementService;
+    private final BracketEditService bracketEditService;
     private final java.util.List<PairImportPort> importers;
 
     public Tournament createTournament(String name) {
@@ -79,6 +81,12 @@ public class TournamentService implements ApplicationService {
     public void clearMatchResult(TournamentId tournamentId, MatchId matchId) {
         Tournament tournament = getTournament(tournamentId);
         matchAdvancementService.clearMatchResult(tournament, matchId);
+        repository.save(tournament);
+    }
+
+    public void swapDrawPairs(TournamentId tournamentId, PairId pairId1, PairId pairId2) {
+        Tournament tournament = getTournament(tournamentId);
+        bracketEditService.swapPairsInDraw(tournament, pairId1, pairId2);
         repository.save(tournament);
     }
 

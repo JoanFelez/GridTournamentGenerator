@@ -332,4 +332,93 @@ class MatchAdvancementServiceTest {
         return (match.pair1() != null && match.pair1().equals(pair)) ||
                (match.pair2() != null && match.pair2().equals(pair));
     }
+
+    // --- Walkover (W.O.) tests ---
+
+    @Test
+    void shouldAdvanceWinnerOnWalkover() {
+        Tournament t = tournamentWith4Pairs();
+        Match r1m0 = t.mainBracket().rounds().get(0).matchAt(0);
+        Pair expectedWinner = r1m0.pair1();
+
+        advancementService.processMatchResult(t, r1m0.id(), MatchResult.walkover(2));
+
+        Match r2m0 = t.mainBracket().rounds().get(1).matchAt(0);
+        assertThat(r2m0.pair1()).isEqualTo(expectedWinner);
+    }
+
+    @Test
+    void shouldRouteWalkoverLoserToConsolationInR1() {
+        Tournament t = tournamentWith4Pairs();
+        Match r1m0 = t.mainBracket().rounds().get(0).matchAt(0);
+        Pair woLoser = r1m0.pair2();
+
+        advancementService.processMatchResult(t, r1m0.id(), MatchResult.walkover(2));
+
+        Match consolationM0 = t.consolationBracket().rounds().get(0).matchAt(0);
+        assertThat(consolationM0.pair1())
+                .as("W.O. loser goes to consolation so their opponent gets guaranteed 2 matches")
+                .isEqualTo(woLoser);
+    }
+
+    @Test
+    void shouldRouteWalkoverWinnerToConsolationWhenTheyLoseInR2() {
+        Tournament t = tournamentWith4Pairs();
+        Round r1 = t.mainBracket().rounds().get(0);
+
+        // R1 match 0: pair1 wins via W.O.
+        Match r1m0 = r1.matchAt(0);
+        Pair woWinner = r1m0.pair1();
+        advancementService.processMatchResult(t, r1m0.id(), MatchResult.walkover(2));
+
+        // R1 match 1: pair1 wins normally
+        Match r1m1 = r1.matchAt(1);
+        advancementService.processMatchResult(t, r1m1.id(), pair1WinsResult());
+
+        // R2: W.O. winner loses
+        Match r2m0 = t.mainBracket().rounds().get(1).matchAt(0);
+        advancementService.processMatchResult(t, r2m0.id(), pair2WinsResult());
+
+        // W.O. winner should be routed to consolation (W.O. doesn't count as match played)
+        Match consolationM0 = t.consolationBracket().rounds().get(0).matchAt(0);
+        assertThat(pairIsInMatch(consolationM0, woWinner))
+                .as("W.O. winner who loses in R2 should go to consolation")
+                .isTrue();
+    }
+
+    @Test
+    void shouldClearWalkoverConsolationRoutingOnResultClear() {
+        Tournament t = tournamentWith4Pairs();
+        Round r1 = t.mainBracket().rounds().get(0);
+
+        Match r1m0 = r1.matchAt(0);
+        Pair woWinner = r1m0.pair1();
+        advancementService.processMatchResult(t, r1m0.id(), MatchResult.walkover(2));
+
+        Match r1m1 = r1.matchAt(1);
+        advancementService.processMatchResult(t, r1m1.id(), pair1WinsResult());
+
+        Match r2m0 = t.mainBracket().rounds().get(1).matchAt(0);
+        advancementService.processMatchResult(t, r2m0.id(), pair2WinsResult());
+
+        // Clear R2 result
+        advancementService.clearMatchResult(t, r2m0.id());
+
+        Match consolationM0 = t.consolationBracket().rounds().get(0).matchAt(0);
+        assertThat(pairIsInMatch(consolationM0, woWinner))
+                .as("Consolation slot should be cleared when R2 result is cleared")
+                .isFalse();
+    }
+
+    @Test
+    void shouldMarkMatchAsWalkover() {
+        Tournament t = tournamentWith4Pairs();
+        Match r1m0 = t.mainBracket().rounds().get(0).matchAt(0);
+
+        advancementService.processMatchResult(t, r1m0.id(), MatchResult.walkover(1));
+
+        assertThat(r1m0.isWalkover()).isTrue();
+        assertThat(r1m0.isPlayed()).isTrue();
+        assertThat(r1m0.winner().get()).isEqualTo(r1m0.pair2());
+    }
 }

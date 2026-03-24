@@ -45,6 +45,8 @@ public class MatchBoxView extends VBox {
     private void applyCssClasses() {
         if (match.isByeMatch()) {
             getStyleClass().add("match-bye");
+        } else if (match.isWalkover()) {
+            getStyleClass().add("match-played");
         } else if (match.isPlayed()) {
             getStyleClass().add("match-played");
         } else if (match.isComplete()) {
@@ -83,9 +85,22 @@ public class MatchBoxView extends VBox {
         if (match.isPlayed()) {
             Region spacer = new Region();
             HBox.setHgrow(spacer, Priority.ALWAYS);
-            Label scoreLabel = new Label(buildScoreText(isPair1));
-            scoreLabel.getStyleClass().add("match-score");
-            row.getChildren().addAll(spacer, scoreLabel);
+
+            if (match.isWalkover()) {
+                boolean isWoPair = match.result()
+                        .map(r -> (isPair1 && r.walkoverPosition() == 1) || (!isPair1 && r.walkoverPosition() == 2))
+                        .getOrElse(false);
+                Label scoreLabel = new Label(isWoPair ? "W.O." : "");
+                scoreLabel.getStyleClass().add("match-score");
+                if (isWoPair) {
+                    scoreLabel.setStyle("-fx-text-fill: #c0392b; -fx-font-weight: bold;");
+                }
+                row.getChildren().addAll(spacer, scoreLabel);
+            } else {
+                Label scoreLabel = new Label(buildScoreText(isPair1));
+                scoreLabel.getStyleClass().add("match-score");
+                row.getChildren().addAll(spacer, scoreLabel);
+            }
         }
 
         return row;
