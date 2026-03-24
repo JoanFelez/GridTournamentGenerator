@@ -92,16 +92,40 @@ class BracketEditServiceTest {
     }
 
     @Test
-    void shouldRejectSwapOfByePair() {
+    void shouldAllowSwapWithByePair() {
         Tournament t = tournamentWith6PairsAndByes();
         Round r1 = t.mainBracket().rounds().get(0);
+        Round r2 = t.mainBracket().rounds().get(1);
 
         Match byeMatch = r1.matches().filter(Match::isByeMatch).head();
-        Pair byePair = byeMatch.pair2(); // BYE is always pair2 in our setup
-        Pair otherPair = r1.matches().filter(m -> !m.isByeMatch()).head().pair1();
+        Pair byePair = byeMatch.pair2().isBye() ? byeMatch.pair2() : byeMatch.pair1();
+        Pair realPairInByeMatch = byeMatch.pair1().isBye() ? byeMatch.pair2() : byeMatch.pair1();
+        Match normalMatch = r1.matches().filter(m -> !m.isByeMatch()).head();
+        Pair targetPair = normalMatch.pair1();
+        Pair targetPartner = normalMatch.pair2();
 
-        assertThatThrownBy(() -> editService.swapPairsInDraw(t, byePair.id(), otherPair.id()))
-                .isInstanceOf(InvalidOperationException.class);
+        // Swap targetPair with BYE → BYE moves to normalMatch, targetPair goes to byeMatch
+        editService.swapPairsInDraw(t, targetPair.id(), byePair.id());
+
+        // byeMatch should now have realPairInByeMatch + targetPair (no BYE)
+        assertThat(byeMatch.isByeMatch())
+                .as("Original BYE match should no longer be a BYE match")
+                .isFalse();
+
+        // normalMatch should now be a BYE match (BYE + targetPartner)
+        assertThat(normalMatch.isByeMatch())
+                .as("Normal match should now be a BYE match after BYE was swapped in")
+                .isTrue();
+
+        // targetPartner should be auto-advanced to R2 (paired with BYE in the new BYE match)
+        boolean partnerAdvanced = r2.matches().exists(m ->
+                (m.pair1() != null && m.pair1().equals(targetPartner)) ||
+                (m.pair2() != null && m.pair2().equals(targetPartner)));
+        assertThat(partnerAdvanced)
+                .as("Partner of swapped-out pair should be auto-advanced via new BYE match")
+                .isTrue();
+
+        editService.validateDrawIntegrity(t);
     }
 
     @Test

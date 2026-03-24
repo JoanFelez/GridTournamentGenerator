@@ -30,10 +30,10 @@ public class SwapPairDialog {
         // "From this match" selector
         grid.add(new Label("Pair to move:"), 0, 0);
         ComboBox<PairItem> fromCombo = new ComboBox<>();
-        if (currentMatch.pair1() != null && !currentMatch.pair1().isBye()) {
+        if (currentMatch.pair1() != null) {
             fromCombo.getItems().add(new PairItem(currentMatch.pair1()));
         }
-        if (currentMatch.pair2() != null && !currentMatch.pair2().isBye()) {
+        if (currentMatch.pair2() != null) {
             fromCombo.getItems().add(new PairItem(currentMatch.pair2()));
         }
         if (!fromCombo.getItems().isEmpty()) {
@@ -42,15 +42,15 @@ public class SwapPairDialog {
         fromCombo.setPrefWidth(250);
         grid.add(fromCombo, 1, 0);
 
-        // "Swap with" selector — all non-BYE pairs from OTHER R1 matches
+        // "Swap with" selector — all pairs from OTHER R1 matches (including BYE)
         grid.add(new Label("Swap with:"), 0, 1);
         ComboBox<PairItem> toCombo = new ComboBox<>();
         for (Match m : r1.matches()) {
             if (m.id().equals(currentMatch.id())) continue;
-            if (m.pair1() != null && !m.pair1().isBye()) {
+            if (m.pair1() != null) {
                 toCombo.getItems().add(new PairItem(m.pair1()));
             }
-            if (m.pair2() != null && !m.pair2().isBye()) {
+            if (m.pair2() != null) {
                 toCombo.getItems().add(new PairItem(m.pair2()));
             }
         }

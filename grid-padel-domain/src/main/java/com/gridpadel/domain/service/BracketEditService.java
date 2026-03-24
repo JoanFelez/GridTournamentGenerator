@@ -29,10 +29,6 @@ public class BracketEditService {
         Pair pair1 = slot1.pair();
         Pair pair2 = slot2.pair();
 
-        if (pair1.isBye() || pair2.isBye()) {
-            throw new InvalidOperationException("Cannot swap BYE pairs — reassign BYE positions instead");
-        }
-
         setSlotPair(slot1, pair2);
         setSlotPair(slot2, pair1);
 
