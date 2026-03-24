@@ -6,12 +6,12 @@ import com.gridpadel.domain.model.Pair;
 import com.gridpadel.domain.model.Tournament;
 import com.gridpadel.ui.dialog.*;
 import com.gridpadel.ui.view.MainView;
+import io.vavr.collection.List;
+import io.vavr.control.Try;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -30,40 +30,34 @@ public class TournamentController {
     }
 
     public void createNewTournament() {
-        TournamentDialog.showCreate().ifPresent(data -> {
-            try {
-                currentTournament = tournamentService.createTournament(data.name());
-                managePairs();
-            } catch (Exception e) {
-                showError("Error creating tournament", e.getMessage());
-            }
-        });
+        TournamentDialog.showCreate().ifPresent(data ->
+                Try.run(() -> {
+                    currentTournament = tournamentService.createTournament(data.name());
+                    managePairs();
+                }).onFailure(e -> showError("Error creating tournament", e.getMessage()))
+        );
     }
 
     public void editTournamentName() {
         if (currentTournament == null) return;
-        TournamentDialog.showEdit(currentTournament.name()).ifPresent(data -> {
-            try {
-                tournamentService.updateTournamentName(currentTournament.id(), data.name());
-                refreshTournament();
-                mainView.updateTitle(currentTournament.name());
-            } catch (Exception e) {
-                showError("Error updating tournament", e.getMessage());
-            }
-        });
+        TournamentDialog.showEdit(currentTournament.name()).ifPresent(data ->
+                Try.run(() -> {
+                    tournamentService.updateTournamentName(currentTournament.id(), data.name());
+                    refreshTournament();
+                    mainView.updateTitle(currentTournament.name());
+                }).onFailure(e -> showError("Error updating tournament", e.getMessage()))
+        );
     }
 
     public void managePairs() {
         if (currentTournament == null) return;
-        PairManagementDialog.show(currentTournament.pairs()).ifPresent(entries -> {
-            try {
-                syncPairs(entries);
-                refreshTournament();
-                refreshDisplay();
-            } catch (Exception e) {
-                showError("Error managing pairs", e.getMessage());
-            }
-        });
+        PairManagementDialog.show(currentTournament.pairs().toJavaList()).ifPresent(entries ->
+                Try.run(() -> {
+                    syncPairs(entries);
+                    refreshTournament();
+                    refreshDisplay();
+                }).onFailure(e -> showError("Error managing pairs", e.getMessage()))
+        );
     }
 
     public void generateBracket() {
@@ -72,13 +66,11 @@ public class TournamentController {
             showError("Cannot generate bracket", "At least 2 pairs are required.");
             return;
         }
-        try {
+        Try.run(() -> {
             tournamentService.generateBracket(currentTournament.id());
             refreshTournament();
             refreshDisplay();
-        } catch (Exception e) {
-            showError("Error generating bracket", e.getMessage());
-        }
+        }).onFailure(e -> showError("Error generating bracket", e.getMessage()));
     }
 
     public void onMatchClicked(Match match) {
@@ -110,72 +102,67 @@ public class TournamentController {
     public void showResultDialog(Match match) {
         if (currentTournament == null || !match.isComplete()) return;
 
-        MatchResultDialog.show(match).ifPresent(action -> {
-            try {
-                switch (action) {
-                    case MatchResultDialog.SaveResult save ->
-                            tournamentService.recordMatchResult(currentTournament.id(), match.id(), save.result());
-                    case MatchResultDialog.ClearResult ignored ->
-                            tournamentService.clearMatchResult(currentTournament.id(), match.id());
-                }
-                refreshTournament();
-                refreshDisplay();
-            } catch (Exception e) {
-                showError("Invalid result", e.getMessage());
-            }
-        });
+        MatchResultDialog.show(match).ifPresent(action ->
+                Try.run(() -> {
+                    switch (action) {
+                        case MatchResultDialog.SaveResult save ->
+                                tournamentService.recordMatchResult(currentTournament.id(), match.id(), save.result());
+                        case MatchResultDialog.ClearResult ignored ->
+                                tournamentService.clearMatchResult(currentTournament.id(), match.id());
+                    }
+                    refreshTournament();
+                    refreshDisplay();
+                }).onFailure(e -> showError("Invalid result", e.getMessage()))
+        );
     }
 
     public void showMatchDetails(Match match) {
         if (currentTournament == null) return;
 
-        MatchDetailsDialog.show(match).ifPresent(details -> {
-            try {
-                if (details.location() != null) {
-                    tournamentService.setMatchLocation(currentTournament.id(), match.id(), details.location());
-                }
-                if (details.dateTime() != null) {
-                    tournamentService.setMatchDateTime(currentTournament.id(), match.id(), details.dateTime());
-                }
-                refreshTournament();
-                refreshDisplay();
-            } catch (Exception e) {
-                showError("Error updating match details", e.getMessage());
-            }
-        });
+        MatchDetailsDialog.show(match).ifPresent(details ->
+                Try.run(() -> {
+                    if (details.location() != null) {
+                        tournamentService.setMatchLocation(currentTournament.id(), match.id(), details.location());
+                    }
+                    if (details.dateTime() != null) {
+                        tournamentService.setMatchDateTime(currentTournament.id(), match.id(), details.dateTime());
+                    }
+                    refreshTournament();
+                    refreshDisplay();
+                }).onFailure(e -> showError("Error updating match details", e.getMessage()))
+        );
     }
 
     public void openTournamentHistory() {
-        try {
-            List<Tournament> tournaments = tournamentService.listTournaments();
-            if (tournaments.isEmpty()) {
-                showInfo("No Tournaments", "No saved tournaments found. Create a new one.");
-                return;
-            }
-            TournamentHistoryDialog.show(tournaments).ifPresent(result -> {
-                switch (result.action()) {
-                    case OPEN -> {
-                        currentTournament = result.tournament();
-                        mainView.updateTitle(currentTournament.name());
-                        refreshDisplay();
+        Try.of(() -> tournamentService.listTournaments())
+                .onSuccess(tournaments -> {
+                    if (tournaments.isEmpty()) {
+                        showInfo("No Tournaments", "No saved tournaments found. Create a new one.");
+                        return;
                     }
-                    case DELETE -> {
-                        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
-                                "Delete tournament '" + result.tournament().name() + "'?");
-                        confirm.showAndWait().filter(b -> b == ButtonType.OK).ifPresent(b -> {
-                            tournamentService.deleteTournament(result.tournament().id());
-                            if (currentTournament != null &&
-                                    currentTournament.id().equals(result.tournament().id())) {
-                                currentTournament = null;
-                                mainView.clearDisplay();
+                    TournamentHistoryDialog.show(tournaments.toJavaList()).ifPresent(result -> {
+                        switch (result.action()) {
+                            case OPEN -> {
+                                currentTournament = result.tournament();
+                                mainView.updateTitle(currentTournament.name());
+                                refreshDisplay();
                             }
-                        });
-                    }
-                }
-            });
-        } catch (Exception e) {
-            showError("Error loading tournaments", e.getMessage());
-        }
+                            case DELETE -> {
+                                Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
+                                        "Delete tournament '" + result.tournament().name() + "'?");
+                                confirm.showAndWait().filter(b -> b == ButtonType.OK).ifPresent(b -> {
+                                    tournamentService.deleteTournament(result.tournament().id());
+                                    if (currentTournament != null &&
+                                            currentTournament.id().equals(result.tournament().id())) {
+                                        currentTournament = null;
+                                        mainView.clearDisplay();
+                                    }
+                                });
+                            }
+                        }
+                    });
+                })
+                .onFailure(e -> showError("Error loading tournaments", e.getMessage()));
     }
 
     public void saveTournament() {
@@ -186,14 +173,12 @@ public class TournamentController {
         showInfo("Saved", "Tournament '" + currentTournament.name() + "' saved successfully.");
     }
 
-    private void syncPairs(List<PairManagementDialog.PairEntry> entries) {
-        List<Pair> existing = currentTournament.pairs();
-        for (Pair p : existing) {
-            tournamentService.removePair(currentTournament.id(), p.id());
-        }
+    private void syncPairs(java.util.List<PairManagementDialog.PairEntry> entries) {
+        List.ofAll(currentTournament.pairs())
+                .forEach(p -> tournamentService.removePair(currentTournament.id(), p.id()));
         refreshTournament();
 
-        for (PairManagementDialog.PairEntry entry : entries) {
+        List.ofAll(entries).forEach(entry -> {
             if (entry.seed() != null) {
                 tournamentService.addSeededPair(currentTournament.id(),
                         entry.player1(), entry.player2(), entry.seed());
@@ -201,7 +186,7 @@ public class TournamentController {
                 tournamentService.addPair(currentTournament.id(),
                         entry.player1(), entry.player2());
             }
-        }
+        });
     }
 
     private void refreshTournament() {

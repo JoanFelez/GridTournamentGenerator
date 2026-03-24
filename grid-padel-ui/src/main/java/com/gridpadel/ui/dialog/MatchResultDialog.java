@@ -42,7 +42,9 @@ public class MatchResultDialog {
         Spinner<Integer>[] p1Spinners = new Spinner[3];
         @SuppressWarnings("unchecked")
         Spinner<Integer>[] p2Spinners = new Spinner[3];
-        List<SetResult> existingSets = match.result().map(MatchResult::sets).orElse(List.of());
+        io.vavr.collection.List<SetResult> existingSets = match.result()
+                .map(MatchResult::sets)
+                .getOrElse(io.vavr.collection.List.empty());
 
         for (int i = 0; i < 3; i++) {
             grid.add(new Label("Set " + (i + 1) + ":"), 0, i + 1);

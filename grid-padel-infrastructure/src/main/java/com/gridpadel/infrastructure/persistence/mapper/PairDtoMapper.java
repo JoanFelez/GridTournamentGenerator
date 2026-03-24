@@ -18,7 +18,7 @@ public class PairDtoMapper {
                 pair.player1Name().value(),
                 pair.player2Name().value(),
                 false,
-                pair.seed().orElse(null)
+                pair.seed().getOrNull()
         );
     }
 

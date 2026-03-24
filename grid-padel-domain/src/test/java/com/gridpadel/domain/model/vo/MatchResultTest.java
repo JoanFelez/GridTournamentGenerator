@@ -166,8 +166,11 @@ class MatchResultTest {
 
     @Test
     void shouldReturnImmutableSetsList() {
-        MatchResult result = MatchResult.of(List.of(set(6, 3), set(6, 4)));
-        assertThatThrownBy(() -> result.sets().add(set(6, 0)))
-                .isInstanceOf(UnsupportedOperationException.class);
+        MatchResult result = MatchResult.of(set(6, 3), set(6, 4));
+        // VAVR List is inherently immutable — append returns a new list
+        io.vavr.collection.List<SetResult> original = result.sets();
+        io.vavr.collection.List<SetResult> appended = original.append(set(6, 0));
+        assertThat(original).hasSize(2);
+        assertThat(appended).hasSize(3);
     }
 }

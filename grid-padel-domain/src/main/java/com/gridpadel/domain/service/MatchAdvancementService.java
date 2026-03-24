@@ -2,9 +2,7 @@ package com.gridpadel.domain.service;
 
 import com.gridpadel.domain.model.*;
 import com.gridpadel.domain.model.vo.*;
-
-import java.util.ArrayList;
-import java.util.List;
+import io.vavr.collection.List;
 
 public class MatchAdvancementService {
 
@@ -17,8 +15,10 @@ public class MatchAdvancementService {
 
         match.recordResult(result);
 
-        Pair winner = match.winner().orElseThrow();
-        Pair loser = match.loser().orElseThrow();
+        Pair winner = match.winner().getOrElseThrow(() ->
+                new IllegalStateException("Match has result but no winner"));
+        Pair loser = match.loser().getOrElseThrow(() ->
+                new IllegalStateException("Match has result but no loser"));
 
         advanceWinner(tournament, match, winner);
 
@@ -32,19 +32,15 @@ public class MatchAdvancementService {
 
         if (!match.isPlayed()) return;
 
-        Pair previousWinner = match.winner().orElse(null);
+        Pair previousWinner = match.winner().getOrNull();
 
         match.clearResult();
 
-        // Remove the advanced winner from the next round
         if (previousWinner != null) {
             removeFromNextRound(tournament, match, previousWinner);
         }
 
-        // If this was R1 main, remove loser from consolation
         if (match.bracketType() == BracketType.MAIN && match.roundNumber() == 1) {
-            // Consolation bracket may need cleanup but we keep it simple:
-            // just clear the pair from consolation R1
             removeFromConsolation(tournament, match);
         }
     }
@@ -55,7 +51,7 @@ public class MatchAdvancementService {
                 : tournament.consolationBracket();
 
         int nextRoundNumber = match.roundNumber() + 1;
-        bracket.round(nextRoundNumber).ifPresent(nextRound -> {
+        bracket.round(nextRoundNumber).forEach(nextRound -> {
             int nextPosition = match.position() / 2;
             Match nextMatch = nextRound.matchAt(nextPosition);
 
@@ -70,21 +66,18 @@ public class MatchAdvancementService {
     private void routeLoserToConsolation(Tournament tournament, Match match, Pair loser) {
         Bracket consolation = tournament.consolationBracket();
 
-        // Consolation R1 position mirrors main R1: every 2 main R1 matches feed 1 consolation match
         int consolationPosition = match.position() / 2;
         int consolationRound = 1;
 
-        // Ensure consolation round exists
         if (consolation.round(consolationRound).isEmpty()) {
             int numConsolationMatches = tournament.mainBracket().rounds().get(0).matchCount() / 2;
-            List<Match> matches = new ArrayList<>();
-            for (int i = 0; i < numConsolationMatches; i++) {
-                matches.add(Match.createEmpty(consolationRound, i, BracketType.CONSOLATION));
-            }
+            List<Match> matches = List.range(0, numConsolationMatches)
+                    .map(i -> Match.createEmpty(consolationRound, i, BracketType.CONSOLATION));
             consolation.addRound(Round.of(consolationRound, matches, BracketType.CONSOLATION));
         }
 
-        Round consolationR1 = consolation.round(consolationRound).orElseThrow();
+        Round consolationR1 = consolation.round(consolationRound).getOrElseThrow(() ->
+                new IllegalStateException("Consolation round 1 should exist"));
         Match consolationMatch = consolationR1.matchAt(consolationPosition);
 
         if (match.position() % 2 == 0) {
@@ -100,7 +93,7 @@ public class MatchAdvancementService {
                 : tournament.consolationBracket();
 
         int nextRoundNumber = match.roundNumber() + 1;
-        bracket.round(nextRoundNumber).ifPresent(nextRound -> {
+        bracket.round(nextRoundNumber).forEach(nextRound -> {
             int nextPosition = match.position() / 2;
             Match nextMatch = nextRound.matchAt(nextPosition);
 
@@ -117,7 +110,7 @@ public class MatchAdvancementService {
         Bracket consolation = tournament.consolationBracket();
         int consolationPosition = match.position() / 2;
 
-        consolation.round(1).ifPresent(cr1 -> {
+        consolation.round(1).forEach(cr1 -> {
             Match consolationMatch = cr1.matchAt(consolationPosition);
             if (match.position() % 2 == 0) {
                 consolationMatch.setPair1(null);
@@ -128,9 +121,8 @@ public class MatchAdvancementService {
     }
 
     private Match findMatch(Tournament tournament, MatchId matchId) {
-        return tournament.allMatches().stream()
-                .filter(m -> m.id().equals(matchId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Match not found: " + matchId));
+        return tournament.allMatches()
+                .find(m -> m.id().equals(matchId))
+                .getOrElseThrow(() -> new IllegalArgumentException("Match not found: " + matchId));
     }
 }

@@ -4,11 +4,11 @@ import com.gridpadel.domain.exception.InvalidOperationException;
 import com.gridpadel.domain.exception.ValidationException;
 import com.gridpadel.domain.model.vo.PairId;
 import com.gridpadel.domain.model.vo.PlayerName;
+import io.vavr.control.Option;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import java.util.Objects;
-import java.util.Optional;
 
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Pair implements DomainEntity {
@@ -64,8 +64,8 @@ public class Pair implements DomainEntity {
         return player2Name;
     }
 
-    public Optional<Integer> seed() {
-        return Optional.ofNullable(seed);
+    public Option<Integer> seed() {
+        return Option.of(seed);
     }
 
     public boolean isSeeded() {

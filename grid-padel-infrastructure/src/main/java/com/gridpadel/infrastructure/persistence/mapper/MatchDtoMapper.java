@@ -4,6 +4,7 @@ import com.gridpadel.domain.model.Match;
 import com.gridpadel.domain.model.Pair;
 import com.gridpadel.domain.model.vo.*;
 import com.gridpadel.infrastructure.persistence.dto.MatchDto;
+import io.vavr.control.Option;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -24,9 +25,9 @@ public class MatchDtoMapper {
                 match.id().value(),
                 match.pair1() != null ? match.pair1().id().value() : null,
                 match.pair2() != null ? match.pair2().id().value() : null,
-                match.location().map(Location::value).orElse(null),
-                match.dateTime().map(dt -> dt.value().format(DT_FORMAT)).orElse(null),
-                match.result().map(matchResultDtoMapper::toDto).orElse(null),
+                match.location().map(Location::value).getOrNull(),
+                match.dateTime().map(dt -> dt.value().format(DT_FORMAT)).getOrNull(),
+                match.result().map(matchResultDtoMapper::toDto).getOrNull(),
                 match.roundNumber(),
                 match.position(),
                 match.bracketType().name()
@@ -34,14 +35,16 @@ public class MatchDtoMapper {
     }
 
     public Match fromDto(MatchDto dto, Map<String, Pair> pairLookup) {
-        Pair pair1 = dto.pair1Id() != null ? pairLookup.get(dto.pair1Id()) : null;
-        Pair pair2 = dto.pair2Id() != null ? pairLookup.get(dto.pair2Id()) : null;
+        Pair pair1 = Option.of(dto.pair1Id()).map(pairLookup::get).getOrNull();
+        Pair pair2 = Option.of(dto.pair2Id()).map(pairLookup::get).getOrNull();
 
-        Location location = dto.location() != null ? Location.of(dto.location()) : null;
-        MatchDateTime dateTime = dto.dateTime() != null
-                ? MatchDateTime.of(LocalDateTime.parse(dto.dateTime(), DT_FORMAT))
-                : null;
-        MatchResult result = dto.result() != null ? matchResultDtoMapper.fromDto(dto.result()) : null;
+        Location location = Option.of(dto.location()).map(Location::of).getOrNull();
+        MatchDateTime dateTime = Option.of(dto.dateTime())
+                .map(dt -> MatchDateTime.of(LocalDateTime.parse(dt, DT_FORMAT)))
+                .getOrNull();
+        MatchResult result = Option.of(dto.result())
+                .map(matchResultDtoMapper::fromDto)
+                .getOrNull();
 
         return Match.restore(
                 MatchId.of(dto.id()),

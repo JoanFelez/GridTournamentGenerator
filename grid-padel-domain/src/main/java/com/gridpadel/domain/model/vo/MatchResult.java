@@ -1,9 +1,7 @@
 package com.gridpadel.domain.model.vo;
 
 import com.gridpadel.domain.exception.ValidationException;
-
-import java.util.List;
-import java.util.stream.Collectors;
+import io.vavr.collection.List;
 
 public record MatchResult(List<SetResult> sets) {
 
@@ -15,10 +13,8 @@ public record MatchResult(List<SetResult> sets) {
             throw new ValidationException("Match must have 2 or 3 sets, got " + sets.size(), "matchResult");
         }
 
-        sets = List.copyOf(sets);
-
-        long pair1Wins = sets.stream().filter(s -> s.winnerPosition() == 1).count();
-        long pair2Wins = sets.stream().filter(s -> s.winnerPosition() == 2).count();
+        long pair1Wins = sets.count(s -> s.winnerPosition() == 1);
+        long pair2Wins = sets.count(s -> s.winnerPosition() == 2);
 
         if (sets.size() == 2) {
             if (pair1Wins != 2 && pair2Wins != 2) {
@@ -28,8 +24,9 @@ public record MatchResult(List<SetResult> sets) {
         }
 
         if (sets.size() == 3) {
-            long p1FirstTwo = sets.subList(0, 2).stream().filter(s -> s.winnerPosition() == 1).count();
-            long p2FirstTwo = sets.subList(0, 2).stream().filter(s -> s.winnerPosition() == 2).count();
+            List<SetResult> firstTwo = sets.take(2);
+            long p1FirstTwo = firstTwo.count(s -> s.winnerPosition() == 1);
+            long p2FirstTwo = firstTwo.count(s -> s.winnerPosition() == 2);
 
             if (p1FirstTwo == 2) {
                 throw new ValidationException(
@@ -42,8 +39,11 @@ public record MatchResult(List<SetResult> sets) {
         }
     }
 
-    public static MatchResult of(List<SetResult> sets) {
-        return new MatchResult(sets);
+    public static MatchResult of(java.util.List<SetResult> sets) {
+        if (sets == null) {
+            return new MatchResult(null);
+        }
+        return new MatchResult(List.ofAll(sets));
     }
 
     public static MatchResult of(SetResult... sets) {
@@ -51,11 +51,11 @@ public record MatchResult(List<SetResult> sets) {
     }
 
     public int setsWonByPair1() {
-        return (int) sets.stream().filter(s -> s.winnerPosition() == 1).count();
+        return sets.count(s -> s.winnerPosition() == 1);
     }
 
     public int setsWonByPair2() {
-        return (int) sets.stream().filter(s -> s.winnerPosition() == 2).count();
+        return sets.count(s -> s.winnerPosition() == 2);
     }
 
     public int winnerPosition() {
@@ -68,8 +68,6 @@ public record MatchResult(List<SetResult> sets) {
 
     @Override
     public String toString() {
-        return sets.stream()
-                .map(SetResult::toString)
-                .collect(Collectors.joining(" "));
+        return sets.map(SetResult::toString).mkString(" ");
     }
 }

@@ -29,7 +29,7 @@ public class PairManagementDialog {
         for (Pair p : existingPairs) {
             listView.getItems().add(new PairEntry(
                     p.player1Name().value(), p.player2Name().value(),
-                    p.seed().orElse(null), false));
+                    p.seed().getOrNull(), false));
         }
 
         listView.setCellFactory(lv -> new ListCell<>() {

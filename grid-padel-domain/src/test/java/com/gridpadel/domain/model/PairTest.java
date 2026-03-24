@@ -6,8 +6,6 @@ import com.gridpadel.domain.model.vo.PairId;
 import com.gridpadel.domain.model.vo.PlayerName;
 import org.junit.jupiter.api.Test;
 
-import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.*;
 
 class PairTest {
@@ -22,7 +20,7 @@ class PairTest {
         assertThat(pair.player1Name().value()).isEqualTo("Carlos");
         assertThat(pair.player2Name().value()).isEqualTo("María");
         assertThat(pair.isBye()).isFalse();
-        assertThat(pair.seed()).isEmpty();
+        assertThat(pair.seed().isEmpty()).isTrue();
         assertThat(pair.isSeeded()).isFalse();
     }
 
@@ -31,7 +29,7 @@ class PairTest {
         Pair bye = Pair.bye();
         assertThat(bye.isBye()).isTrue();
         assertThat(bye.displayName()).isEqualTo("BYE");
-        assertThat(bye.seed()).isEmpty();
+        assertThat(bye.seed().isEmpty()).isTrue();
         assertThat(bye.isSeeded()).isFalse();
     }
 
@@ -55,7 +53,7 @@ class PairTest {
     void shouldRestorePairWithSeed() {
         PairId id = PairId.generate();
         Pair pair = Pair.restore(id, PlayerName.of("A"), PlayerName.of("B"), false, 1);
-        assertThat(pair.seed()).isPresent().contains(1);
+        assertThat(pair.seed().get()).isEqualTo(1);
     }
 
     @Test
@@ -99,7 +97,7 @@ class PairTest {
     void shouldAssignSeed() {
         Pair pair = Pair.create(PlayerName.of("Carlos"), PlayerName.of("María"));
         pair.assignSeed(1);
-        assertThat(pair.seed()).isPresent().contains(1);
+        assertThat(pair.seed().get()).isEqualTo(1);
         assertThat(pair.isSeeded()).isTrue();
     }
 
@@ -108,7 +106,7 @@ class PairTest {
         Pair pair = Pair.create(PlayerName.of("Carlos"), PlayerName.of("María"));
         pair.assignSeed(1);
         pair.assignSeed(3);
-        assertThat(pair.seed()).isPresent().contains(3);
+        assertThat(pair.seed().get()).isEqualTo(3);
     }
 
     @Test
@@ -116,7 +114,7 @@ class PairTest {
         Pair pair = Pair.create(PlayerName.of("Carlos"), PlayerName.of("María"));
         pair.assignSeed(1);
         pair.removeSeed();
-        assertThat(pair.seed()).isEmpty();
+        assertThat(pair.seed().isEmpty()).isTrue();
         assertThat(pair.isSeeded()).isFalse();
     }
 

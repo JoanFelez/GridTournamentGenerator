@@ -33,7 +33,7 @@ public class ByeAssignmentDialog {
         Map<CheckBox, Pair> checkboxMap = new LinkedHashMap<>();
         for (Pair pair : pairs) {
             String label = pair.displayName();
-            if (pair.seed().isPresent()) {
+            if (pair.seed().isDefined()) {
                 label += "  [Seed " + pair.seed().get() + "]";
             }
             CheckBox cb = new CheckBox(label);

@@ -28,18 +28,18 @@ public class MatchDetailsDialog {
         grid.setVgap(10);
         grid.setPadding(new Insets(20, 150, 10, 10));
 
-        TextField locationField = new TextField(match.location().map(l -> l.value()).orElse(""));
+        TextField locationField = new TextField(match.location().map(l -> l.value()).getOrElse(""));
         locationField.setPromptText("Court name or location");
         locationField.setPrefWidth(250);
 
         DatePicker datePicker = new DatePicker();
-        match.dateTime().ifPresent(dt -> datePicker.setValue(dt.value().toLocalDate()));
+        match.dateTime().forEach(dt -> datePicker.setValue(dt.value().toLocalDate()));
 
         Spinner<Integer> hourSpinner = new Spinner<>(0, 23,
-                match.dateTime().map(dt -> dt.value().getHour()).orElse(10));
+                match.dateTime().map(dt -> dt.value().getHour()).getOrElse(10));
         hourSpinner.setPrefWidth(70);
         Spinner<Integer> minuteSpinner = new Spinner<>(0, 59,
-                match.dateTime().map(dt -> dt.value().getMinute()).orElse(0), 15);
+                match.dateTime().map(dt -> dt.value().getMinute()).getOrElse(0), 15);
         minuteSpinner.setPrefWidth(70);
 
         grid.add(new Label("Location:"), 0, 0);
