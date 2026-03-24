@@ -128,26 +128,37 @@ public class BracketGenerationService {
     }
 
     Array<Integer> standardSeedPositions(int numMatches) {
-        List<Integer> positions = List.of(0);
-
         if (numMatches == 1) {
             return Array.of(0);
         }
 
-        positions = positions.append(1);
+        // Generate draw order: which seed number occupies each match position
+        // Uses the standard tournament seeding algorithm where the sum of
+        // paired seeds equals (round size + 1), ensuring top seeds meet last
+        java.util.List<Integer> draw = new java.util.ArrayList<>(java.util.List.of(1, 2));
 
-        int currentSize = 2;
-        while (currentSize < numMatches) {
-            int nextSize = currentSize * 2;
-            List<Integer> expanded = List.empty();
-            for (int p : positions) {
-                expanded = expanded.append(p).append(nextSize - 1 - p);
+        while (draw.size() < numMatches) {
+            int sum = draw.size() * 2 + 1;
+            java.util.List<Integer> newDraw = new java.util.ArrayList<>();
+            for (int i = 0; i < draw.size(); i++) {
+                if (i % 2 == 0) {
+                    newDraw.add(draw.get(i));
+                    newDraw.add(sum - draw.get(i));
+                } else {
+                    newDraw.add(sum - draw.get(i));
+                    newDraw.add(draw.get(i));
+                }
             }
-            positions = expanded;
-            currentSize = nextSize;
+            draw = newDraw;
         }
 
-        return Array.ofAll(positions);
+        // Convert draw order to seed→position mapping
+        Integer[] positions = new Integer[numMatches];
+        for (int matchPos = 0; matchPos < draw.size(); matchPos++) {
+            positions[draw.get(matchPos) - 1] = matchPos;
+        }
+
+        return Array.of(positions);
     }
 
     private int nextPowerOf2(int n) {
