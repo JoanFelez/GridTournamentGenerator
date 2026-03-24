@@ -191,29 +191,29 @@ public class BracketPane extends Pane {
         boolean hasConsolation = layout.matchPositions().stream().anyMatch(MatchPosition::isConsolation);
 
         if (hasMain) {
-            javafx.scene.control.Label mainLabel = new javafx.scene.control.Label("MAIN BRACKET →");
+            Label mainLabel = new Label("MAIN BRACKET →");
             mainLabel.getStyleClass().add("bracket-label");
             mainLabel.getStyleClass().add("bracket-label-main");
 
-            double maxX = layout.matchPositions().stream()
+            double minMainX = layout.matchPositions().stream()
                     .filter(p -> !p.isConsolation())
                     .mapToDouble(MatchPosition::x)
-                    .max().orElse(0);
-            mainLabel.setLayoutX(maxX + BracketLayoutCalculator.MATCH_BOX_WIDTH / 2 - 60);
+                    .min().orElse(0);
+            mainLabel.setLayoutX(minMainX + BracketLayoutCalculator.MATCH_BOX_WIDTH / 2 - 60);
             mainLabel.setLayoutY(5);
             getChildren().add(mainLabel);
         }
 
         if (hasConsolation) {
-            javafx.scene.control.Label consolLabel = new javafx.scene.control.Label("← CONSOLATION");
+            Label consolLabel = new Label("← CONSOLATION BRACKET");
             consolLabel.getStyleClass().add("bracket-label");
             consolLabel.getStyleClass().add("bracket-label-consolation");
 
-            double minX = layout.matchPositions().stream()
+            double maxConsolX = layout.matchPositions().stream()
                     .filter(MatchPosition::isConsolation)
                     .mapToDouble(MatchPosition::x)
-                    .min().orElse(0);
-            consolLabel.setLayoutX(minX + BracketLayoutCalculator.MATCH_BOX_WIDTH / 2 - 60);
+                    .max().orElse(0);
+            consolLabel.setLayoutX(maxConsolX + BracketLayoutCalculator.MATCH_BOX_WIDTH / 2 - 80);
             consolLabel.setLayoutY(5);
             getChildren().add(consolLabel);
         }
