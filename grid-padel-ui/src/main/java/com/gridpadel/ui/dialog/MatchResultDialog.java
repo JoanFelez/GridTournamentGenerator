@@ -28,16 +28,23 @@ public class MatchResultDialog {
         dialog.getDialogPane().getButtonTypes().addAll(saveButton, woButton, clearButton, ButtonType.CANCEL);
 
         GridPane grid = new GridPane();
-        grid.setHgap(10);
+        grid.setHgap(30);
         grid.setVgap(10);
-        grid.setPadding(new Insets(20, 100, 10, 10));
+        grid.setPadding(new Insets(20, 40, 10, 10));
 
         String p1Name = match.pair1() != null ? match.pair1().displayName() : "Pair 1";
         String p2Name = match.pair2() != null ? match.pair2().displayName() : "Pair 2";
 
+        Label p1Label = new Label(p1Name);
+        p1Label.setMinWidth(150);
+        p1Label.setMaxWidth(250);
+        Label p2Label = new Label(p2Name);
+        p2Label.setMinWidth(150);
+        p2Label.setMaxWidth(250);
+
         grid.add(new Label(""), 0, 0);
-        grid.add(new Label(p1Name), 1, 0);
-        grid.add(new Label(p2Name), 2, 0);
+        grid.add(p1Label, 1, 0);
+        grid.add(p2Label, 2, 0);
 
         @SuppressWarnings("unchecked")
         Spinner<Integer>[] p1Spinners = new Spinner[3];
