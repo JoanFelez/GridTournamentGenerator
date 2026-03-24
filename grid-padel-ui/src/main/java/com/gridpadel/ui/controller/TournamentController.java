@@ -33,6 +33,7 @@ public class TournamentController {
         TournamentDialog.showCreate().ifPresent(data ->
                 Try.run(() -> {
                     currentTournament = tournamentService.createTournament(data.name());
+                    mainView.updateTitle(currentTournament.name());
                     managePairs();
                 }).onFailure(e -> showError("Error creating tournament", e.getMessage()))
         );
@@ -51,7 +52,7 @@ public class TournamentController {
 
     public void managePairs() {
         if (currentTournament == null) return;
-        PairManagementDialog.show(currentTournament.pairs().toJavaList(), this::handleImport).ifPresent(entries ->
+        PairManagementDialog.show(currentTournament.pairs().toJavaList(), this::parseImportFile).ifPresent(entries ->
                 Try.run(() -> {
                     syncPairs(entries);
                     refreshTournament();
@@ -60,19 +61,17 @@ public class TournamentController {
         );
     }
 
-    public void handleImport(java.io.File file) {
-        if (currentTournament == null) return;
+    private java.util.List<PairManagementDialog.PairEntry> parseImportFile(java.io.File file) {
         String name = file.getName();
         String ext = name.contains(".") ? name.substring(name.lastIndexOf('.') + 1) : "";
 
-        Try.withResources(() -> new java.io.FileInputStream(file))
-                .of(is -> tournamentService.importPairs(currentTournament.id(), is, ext))
+        return Try.withResources(() -> new java.io.FileInputStream(file))
+                .of(is -> tournamentService.parsePairsFromFile(is, ext))
                 .flatMap(result -> result)
-                .onSuccess(pairs -> {
-                    refreshTournament();
-                    showInfo("Import Successful", pairs.size() + " pair(s) imported from " + file.getName());
-                })
-                .onFailure(e -> showError("Import Error", e.getMessage()));
+                .map(importedPairs -> importedPairs.map(ip ->
+                        new PairManagementDialog.PairEntry(ip.player1(), ip.player2(), ip.seed(), true))
+                        .toJavaList())
+                .getOrElseThrow(e -> new RuntimeException(e.getMessage()));
     }
 
     public void generateBracket() {

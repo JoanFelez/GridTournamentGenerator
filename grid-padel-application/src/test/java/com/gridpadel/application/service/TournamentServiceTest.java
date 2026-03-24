@@ -230,9 +230,7 @@ class TournamentServiceTest {
     // --- Import pairs ---
 
     @Test
-    void shouldImportPairsFromFile() {
-        Tournament t = Tournament.create("Test");
-        when(repository.findById(t.id())).thenReturn(Option.of(t));
+    void shouldParsePairsFromFile() {
         when(csvImporter.supports("csv")).thenReturn(true);
 
         List<PairImportPort.ImportedPair> imported = List.of(
@@ -241,20 +239,19 @@ class TournamentServiceTest {
         );
         when(csvImporter.importPairs(any())).thenReturn(Try.success(imported));
 
-        Try<List<Pair>> result = service.importPairs(t.id(), java.io.InputStream.nullInputStream(), "csv");
+        Try<List<PairImportPort.ImportedPair>> result = service.parsePairsFromFile(
+                java.io.InputStream.nullInputStream(), "csv");
 
         assertThat(result.isSuccess()).isTrue();
         assertThat(result.get()).hasSize(2);
-        assertThat(t.pairs()).hasSize(2);
-        verify(repository).save(t);
+        assertThat(result.get().get(0).player1()).isEqualTo("Alice");
     }
 
     @Test
     void shouldRejectUnsupportedFileFormat() {
-        Tournament t = Tournament.create("Test");
         when(csvImporter.supports("pdf")).thenReturn(false);
 
-        assertThatThrownBy(() -> service.importPairs(t.id(), java.io.InputStream.nullInputStream(), "pdf"))
+        assertThatThrownBy(() -> service.parsePairsFromFile(java.io.InputStream.nullInputStream(), "pdf"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Unsupported file format");
     }

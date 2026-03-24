@@ -12,13 +12,14 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class PairManagementDialog {
 
     public record PairEntry(String player1, String player2, Integer seed, boolean isNew) {}
 
-    public static Optional<List<PairEntry>> show(List<Pair> existingPairs, Consumer<File> importHandler) {
+    public static Optional<List<PairEntry>> show(List<Pair> existingPairs,
+                                                  Function<File, List<PairEntry>> importParser) {
         Dialog<List<PairEntry>> dialog = new Dialog<>();
         dialog.setTitle("Manage Pairs");
         dialog.setHeaderText("Add, edit, or remove pairs (max 32)");
@@ -89,7 +90,18 @@ public class PairManagementDialog {
             );
             File file = fileChooser.showOpenDialog(dialog.getDialogPane().getScene().getWindow());
             if (file != null) {
-                importHandler.accept(file);
+                try {
+                    List<PairEntry> imported = importParser.apply(file);
+                    int remaining = 32 - listView.getItems().size();
+                    if (imported.size() > remaining) {
+                        showAlert("Only " + remaining + " more pair(s) can be added (max 32). "
+                                + "Importing the first " + remaining + " from the file.");
+                        imported = imported.subList(0, remaining);
+                    }
+                    listView.getItems().addAll(imported);
+                } catch (Exception ex) {
+                    showAlert("Import error: " + ex.getMessage());
+                }
             }
         });
 
@@ -108,11 +120,6 @@ public class PairManagementDialog {
         });
 
         return dialog.showAndWait();
-    }
-
-    public static ListView<PairEntry> getListView(Dialog<?> dialog) {
-        VBox content = (VBox) dialog.getDialogPane().getContent();
-        return (ListView<PairEntry>) content.getChildren().get(0);
     }
 
     private static void showAlert(String message) {

@@ -106,26 +106,13 @@ public class TournamentService implements ApplicationService {
         repository.save(tournament);
     }
 
-    public Try<List<Pair>> importPairs(TournamentId tournamentId, InputStream inputStream, String fileExtension) {
+    public Try<List<ImportedPair>> parsePairsFromFile(InputStream inputStream, String fileExtension) {
         PairImportPort importer = List.ofAll(importers)
                 .find(i -> i.supports(fileExtension))
                 .getOrElseThrow(() -> new IllegalArgumentException(
                         "Unsupported file format: " + fileExtension + ". Supported formats: CSV, XLS, XLSX"));
 
-        return importer.importPairs(inputStream)
-                .map(importedPairs -> {
-                    Tournament tournament = getTournament(tournamentId);
-                    List<Pair> addedPairs = importedPairs.map(ip -> {
-                        Pair pair = Pair.create(PlayerName.of(ip.player1()), PlayerName.of(ip.player2()));
-                        if (ip.seed() != null) {
-                            pair.assignSeed(ip.seed());
-                        }
-                        tournament.addPair(pair);
-                        return pair;
-                    });
-                    repository.save(tournament);
-                    return addedPairs;
-                });
+        return importer.importPairs(inputStream);
     }
 
     private Match findMatch(Tournament tournament, MatchId matchId) {

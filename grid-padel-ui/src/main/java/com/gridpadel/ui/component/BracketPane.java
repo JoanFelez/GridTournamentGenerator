@@ -33,6 +33,7 @@ public class BracketPane extends Pane {
         matchBoxes = HashMap.empty();
 
         if (tournament.mainBracket().rounds().isEmpty()) {
+            showPairsSummary(tournament);
             return;
         }
 
@@ -61,6 +62,47 @@ public class BracketPane extends Pane {
         }
 
         addBracketLabels(layout);
+    }
+
+    private void showPairsSummary(Tournament tournament) {
+        javafx.scene.layout.VBox summary = new javafx.scene.layout.VBox(8);
+        summary.setPadding(new javafx.geometry.Insets(30));
+        summary.setStyle("-fx-background-color: #f8f9fa; -fx-background-radius: 8;");
+
+        javafx.scene.control.Label title = new javafx.scene.control.Label(
+                tournament.name() + " — " + tournament.pairCount() + " pair(s) registered");
+        title.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
+        summary.getChildren().add(title);
+
+        if (tournament.pairCount() > 0) {
+            javafx.scene.control.Label header = new javafx.scene.control.Label("Registered Pairs:");
+            header.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #555; -fx-padding: 10 0 4 0;");
+            summary.getChildren().add(header);
+
+            tournament.pairs().zipWithIndex().forEach(tuple -> {
+                var pair = tuple._1;
+                int idx = tuple._2.intValue() + 1;
+                String seedText = pair.isSeeded() ? " [Seed " + pair.seed().get() + "]" : "";
+                javafx.scene.control.Label pairLabel = new javafx.scene.control.Label(
+                        idx + ". " + pair.player1Name().value() + " / " + pair.player2Name().value() + seedText);
+                pairLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #333;");
+                summary.getChildren().add(pairLabel);
+            });
+
+            javafx.scene.control.Label hint = new javafx.scene.control.Label(
+                    "Click ⚡ Generate to create the bracket");
+            hint.setStyle("-fx-font-size: 12px; -fx-text-fill: #888; -fx-padding: 12 0 0 0;");
+            summary.getChildren().add(hint);
+        } else {
+            javafx.scene.control.Label hint = new javafx.scene.control.Label(
+                    "Click 👥 Pairs to add pairs, then ⚡ Generate to create the bracket");
+            hint.setStyle("-fx-font-size: 13px; -fx-text-fill: #888; -fx-padding: 8 0 0 0;");
+            summary.getChildren().add(hint);
+        }
+
+        summary.setLayoutX(30);
+        summary.setLayoutY(30);
+        getChildren().add(summary);
     }
 
     private Map<String, Match> buildMatchLookup(Tournament tournament) {

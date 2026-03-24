@@ -1,5 +1,6 @@
 package com.gridpadel.ui.dialog;
 
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
@@ -39,7 +40,7 @@ public class TournamentDialog {
         grid.add(nameField, 1, 0);
 
         dialog.getDialogPane().setContent(grid);
-        nameField.requestFocus();
+        Platform.runLater(nameField::requestFocus);
 
         dialog.setResultConverter(button -> {
             if (button == actionButton) {
