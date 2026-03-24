@@ -1,0 +1,118 @@
+name: Build & Package
+
+on:
+  push:
+    branches: [main, develop, 'feature/**']
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run tests
+        run: mvn test -q
+
+  package-windows:
+    name: Package Windows
+    needs: test
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build fat JAR
+        run: mvn clean package -DskipTests -q
+
+      - name: Stage JAR
+        run: |
+          mkdir staging
+          copy grid-padel-ui\target\grid-padel-ui-0.0.1.jar staging\
+        shell: cmd
+
+      - name: Create Windows app-image
+        run: |
+          jpackage ^
+            --type app-image ^
+            --name "Grid Padel Generator" ^
+            --app-version 0.0.1 ^
+            --vendor "GridPadel" ^
+            --description "Desktop application for managing padel tournament brackets" ^
+            --input staging ^
+            --main-jar grid-padel-ui-0.0.1.jar ^
+            --main-class org.springframework.boot.loader.launch.JarLauncher ^
+            --dest dist ^
+            --java-options "--enable-native-access=ALL-UNNAMED" ^
+            --java-options "-Xmx512m"
+        shell: cmd
+
+      - name: Upload Windows app
+        uses: actions/upload-artifact@v4
+        with:
+          name: GridPadelGenerator-windows
+          path: dist/Grid Padel Generator/
+          retention-days: 30
+
+  package-linux:
+    name: Package Linux
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build fat JAR
+        run: mvn clean package -DskipTests -q
+
+      - name: Stage JAR
+        run: |
+          mkdir -p staging
+          cp grid-padel-ui/target/grid-padel-ui-0.0.1.jar staging/
+
+      - name: Create Linux app-image
+        run: |
+          jpackage \
+            --type app-image \
+            --name "Grid Padel Generator" \
+            --app-version 0.0.1 \
+            --vendor "GridPadel" \
+            --description "Desktop application for managing padel tournament brackets" \
+            --input staging \
+            --main-jar grid-padel-ui-0.0.1.jar \
+            --main-class org.springframework.boot.loader.launch.JarLauncher \
+            --dest dist \
+            --java-options "--enable-native-access=ALL-UNNAMED" \
+            --java-options "-Xmx512m"
+
+      - name: Upload Linux app
+        uses: actions/upload-artifact@v4
+        with:
+          name: GridPadelGenerator-linux
+          path: dist/Grid Padel Generator/
+          retention-days: 30

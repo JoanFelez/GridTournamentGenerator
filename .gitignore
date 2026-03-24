@@ -81,6 +81,7 @@ jacoco.exec
 
 # === jpackage / distribution ===
 dist/
+staging/
 build/
 *.exe
 *.msi
