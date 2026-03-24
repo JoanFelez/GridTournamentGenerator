@@ -181,3 +181,50 @@
     -fx-padding: 10 4;
     -fx-font-style: italic;
 }
+
+/* === Welcome View === */
+.welcome-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #263238;
+    -fx-padding: 0 0 4 0;
+}
+
+.welcome-subtitle {
+    -fx-font-size: 15px;
+    -fx-text-fill: #607d8b;
+}
+
+.welcome-empty {
+    -fx-font-size: 14px;
+    -fx-text-fill: #78909c;
+    -fx-text-alignment: center;
+    -fx-padding: 20 0 0 0;
+    -fx-line-spacing: 4;
+}
+
+.welcome-card {
+    -fx-background-color: white;
+    -fx-border-color: #cfd8dc;
+    -fx-border-width: 1.5;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 4, 0, 1, 2);
+    -fx-cursor: hand;
+}
+
+.welcome-card:hover {
+    -fx-border-color: #1565c0;
+    -fx-effect: dropshadow(three-pass-box, rgba(21,101,192,0.25), 8, 0, 0, 2);
+}
+
+.welcome-card-name {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #263238;
+}
+
+.welcome-card-detail {
+    -fx-font-size: 12px;
+    -fx-text-fill: #607d8b;
+}

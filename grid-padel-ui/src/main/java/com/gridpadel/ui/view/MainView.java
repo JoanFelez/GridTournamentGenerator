@@ -66,6 +66,7 @@ public class MainView extends BorderPane {
         this.controller = controller;
         controller.setMainView(this);
         bracketPane.setMatchClickHandler(match -> controller.onMatchClicked(match));
+        bracketPane.setTournamentSelectHandler(t -> controller.openTournament(t));
         controller.refreshTournamentList();
     }
 
@@ -76,6 +77,9 @@ public class MainView extends BorderPane {
     public void clearDisplay() {
         bracketPane.getChildren().clear();
         titleLabel.setText("Grid Padel Tournament Generator");
+        if (controller != null) {
+            controller.refreshTournamentList();
+        }
     }
 
     public void updateTitle(String tournamentName) {
@@ -89,25 +93,29 @@ public class MainView extends BorderPane {
             Label empty = new Label("No tournaments yet");
             empty.getStyleClass().add("sidebar-empty");
             tournamentListBox.getChildren().add(empty);
-            return;
+        } else {
+            Tournament current = controller != null ? controller.currentTournament() : null;
+            for (Tournament t : tournaments) {
+                Label item = new Label(t.name());
+                item.getStyleClass().add("sidebar-item");
+                item.setMaxWidth(Double.MAX_VALUE);
+                if (current != null && current.id().equals(t.id())) {
+                    item.getStyleClass().add("sidebar-item-active");
+                }
+                String pairInfo = t.pairCount() + " pairs";
+                boolean hasBracket = !t.mainBracket().rounds().isEmpty();
+                if (hasBracket) pairInfo += " • bracket";
+                item.setTooltip(new Tooltip(pairInfo));
+                item.setOnMouseClicked(e -> {
+                    if (controller != null) controller.openTournament(t);
+                });
+                tournamentListBox.getChildren().add(item);
+            }
         }
 
-        Tournament current = controller != null ? controller.currentTournament() : null;
-        for (Tournament t : tournaments) {
-            Label item = new Label(t.name());
-            item.getStyleClass().add("sidebar-item");
-            item.setMaxWidth(Double.MAX_VALUE);
-            if (current != null && current.id().equals(t.id())) {
-                item.getStyleClass().add("sidebar-item-active");
-            }
-            String pairInfo = t.pairCount() + " pairs";
-            boolean hasBracket = !t.mainBracket().rounds().isEmpty();
-            if (hasBracket) pairInfo += " • bracket";
-            item.setTooltip(new Tooltip(pairInfo));
-            item.setOnMouseClicked(e -> {
-                if (controller != null) controller.openTournament(t);
-            });
-            tournamentListBox.getChildren().add(item);
+        // Show welcome view in center when no tournament is selected
+        if (controller == null || controller.currentTournament() == null) {
+            bracketPane.showWelcomeView(tournaments);
         }
     }
 

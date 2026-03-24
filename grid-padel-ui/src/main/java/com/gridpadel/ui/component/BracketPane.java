@@ -8,9 +8,15 @@ import com.gridpadel.ui.layout.ConnectorLine;
 import com.gridpadel.ui.layout.MatchPosition;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.Map;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.Label;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.scene.shape.Line;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 public class BracketPane extends Pane {
@@ -18,6 +24,7 @@ public class BracketPane extends Pane {
     private final BracketLayoutCalculator layoutCalculator;
     private Map<String, MatchBoxView> matchBoxes = HashMap.empty();
     private Consumer<Match> matchClickHandler;
+    private Consumer<Tournament> tournamentSelectHandler;
 
     public BracketPane() {
         this.layoutCalculator = new BracketLayoutCalculator();
@@ -26,6 +33,75 @@ public class BracketPane extends Pane {
 
     public void setMatchClickHandler(Consumer<Match> handler) {
         this.matchClickHandler = handler;
+    }
+
+    public void setTournamentSelectHandler(Consumer<Tournament> handler) {
+        this.tournamentSelectHandler = handler;
+    }
+
+    public void showWelcomeView(List<Tournament> tournaments) {
+        getChildren().clear();
+        matchBoxes = HashMap.empty();
+
+        VBox container = new VBox(20);
+        container.setPadding(new Insets(40));
+        container.setAlignment(Pos.TOP_CENTER);
+        container.setMinWidth(600);
+
+        Label title = new Label("🏸 Grid Padel Tournament Generator");
+        title.getStyleClass().add("welcome-title");
+
+        if (tournaments.isEmpty()) {
+            Label emptyMsg = new Label("No tournaments yet.\nClick 🆕 New to create your first tournament.");
+            emptyMsg.getStyleClass().add("welcome-empty");
+            container.getChildren().addAll(title, emptyMsg);
+        } else {
+            Label subtitle = new Label("Select a tournament to open:");
+            subtitle.getStyleClass().add("welcome-subtitle");
+
+            FlowPane grid = new FlowPane(16, 16);
+            grid.setAlignment(Pos.CENTER);
+            grid.setPadding(new Insets(10, 0, 0, 0));
+
+            for (Tournament t : tournaments) {
+                VBox card = createTournamentCard(t);
+                grid.getChildren().add(card);
+            }
+
+            container.getChildren().addAll(title, subtitle, grid);
+        }
+
+        container.setLayoutX(0);
+        container.setLayoutY(0);
+        getChildren().add(container);
+    }
+
+    private VBox createTournamentCard(Tournament tournament) {
+        Label name = new Label(tournament.name());
+        name.getStyleClass().add("welcome-card-name");
+
+        String pairsText = tournament.pairCount() + " pair" + (tournament.pairCount() != 1 ? "s" : "");
+        boolean hasBracket = !tournament.mainBracket().rounds().isEmpty();
+        String statusText = hasBracket ? "📊 Bracket generated" : "📝 Draft";
+
+        Label pairs = new Label("👥 " + pairsText);
+        pairs.getStyleClass().add("welcome-card-detail");
+
+        Label status = new Label(statusText);
+        status.getStyleClass().add("welcome-card-detail");
+
+        VBox card = new VBox(6, name, pairs, status);
+        card.getStyleClass().add("welcome-card");
+        card.setPrefWidth(220);
+        card.setPadding(new Insets(16));
+
+        card.setOnMouseClicked(e -> {
+            if (tournamentSelectHandler != null) {
+                tournamentSelectHandler.accept(tournament);
+            }
+        });
+
+        return card;
     }
 
     public void renderTournament(Tournament tournament) {
