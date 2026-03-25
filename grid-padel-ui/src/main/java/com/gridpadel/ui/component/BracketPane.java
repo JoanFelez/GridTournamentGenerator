@@ -138,6 +138,20 @@ public class BracketPane extends Pane {
         }
 
         addBracketLabels(layout);
+        updatePrefSize(layout);
+    }
+
+    private void updatePrefSize(BracketLayout layout) {
+        double maxX = 0;
+        double maxY = 0;
+        for (MatchPosition pos : layout.matchPositions()) {
+            maxX = Math.max(maxX, pos.x() + BracketLayoutCalculator.MATCH_BOX_WIDTH);
+            maxY = Math.max(maxY, pos.y() + BracketLayoutCalculator.MATCH_BOX_HEIGHT);
+        }
+        setPrefWidth(maxX + BracketLayoutCalculator.PADDING);
+        setPrefHeight(maxY + BracketLayoutCalculator.PADDING);
+        setMinWidth(maxX + BracketLayoutCalculator.PADDING);
+        setMinHeight(maxY + BracketLayoutCalculator.PADDING);
     }
 
     private void showPairsSummary(Tournament tournament) {
