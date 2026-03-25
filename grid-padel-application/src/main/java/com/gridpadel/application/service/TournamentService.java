@@ -4,6 +4,7 @@ import com.gridpadel.domain.model.Match;
 import com.gridpadel.domain.model.Pair;
 import com.gridpadel.domain.model.Tournament;
 import com.gridpadel.domain.model.vo.*;
+import com.gridpadel.domain.port.BracketExportPort;
 import com.gridpadel.domain.port.BracketPublishPort;
 import com.gridpadel.domain.port.PairImportPort;
 import com.gridpadel.domain.port.PairImportPort.ImportedPair;
@@ -17,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.time.LocalDateTime;
 
 @Service
@@ -28,6 +30,7 @@ public class TournamentService implements ApplicationService {
     private final MatchAdvancementService matchAdvancementService;
     private final BracketEditService bracketEditService;
     private final java.util.List<PairImportPort> importers;
+    private final BracketExportPort bracketExportPort;
     private final BracketPublishPort bracketPublishPort;
 
     public Tournament createTournament(String name) {
@@ -139,6 +142,11 @@ public class TournamentService implements ApplicationService {
                         "Unsupported file format: " + fileExtension + ". Supported formats: CSV, XLS, XLSX"));
 
         return importer.importPairs(inputStream);
+    }
+
+    public void exportToPdf(TournamentId tournamentId, OutputStream outputStream) {
+        Tournament tournament = getTournament(tournamentId);
+        bracketExportPort.exportToPdf(tournament, outputStream);
     }
 
     public String publishToGitHubPages(String repoUrl) {

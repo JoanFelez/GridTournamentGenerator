@@ -3,6 +3,7 @@ package com.gridpadel.application.service;
 import com.gridpadel.domain.exception.ValidationException;
 import com.gridpadel.domain.model.*;
 import com.gridpadel.domain.model.vo.*;
+import com.gridpadel.domain.port.BracketExportPort;
 import com.gridpadel.domain.port.BracketPublishPort;
 import com.gridpadel.domain.port.PairImportPort;
 import com.gridpadel.domain.repository.TournamentRepository;
@@ -33,6 +34,9 @@ class TournamentServiceTest {
     private PairImportPort csvImporter;
 
     @Mock
+    private BracketExportPort bracketExportPort;
+
+    @Mock
     private BracketPublishPort bracketPublishPort;
 
     private TournamentService service;
@@ -45,6 +49,7 @@ class TournamentServiceTest {
                 new MatchAdvancementService(),
                 new BracketEditService(),
                 java.util.List.of(csvImporter),
+                bracketExportPort,
                 bracketPublishPort
         );
     }
