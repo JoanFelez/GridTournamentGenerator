@@ -66,6 +66,12 @@ public class TournamentService implements ApplicationService {
         repository.save(tournament);
     }
 
+    public void clearBrackets(TournamentId tournamentId) {
+        Tournament tournament = getTournament(tournamentId);
+        tournament.clearBrackets();
+        repository.save(tournament);
+    }
+
     public void generateBracket(TournamentId tournamentId) {
         Tournament tournament = getTournament(tournamentId);
         bracketGenerationService.generateMainBracket(tournament);

@@ -86,6 +86,12 @@ public class Tournament implements DomainEntity {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public void clearBrackets() {
+        mainBracket.clearRounds();
+        consolationBracket.clearRounds();
+        this.updatedAt = LocalDateTime.now();
+    }
+
     public List<Match> allMatches() {
         return mainBracket.allMatches().appendAll(consolationBracket.allMatches());
     }

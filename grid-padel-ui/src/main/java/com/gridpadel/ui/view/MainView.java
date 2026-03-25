@@ -51,7 +51,7 @@ public class MainView extends BorderPane {
             }
         });
 
-        titleLabel = new Label("Grid Padel Tournament Generator");
+        titleLabel = new Label("Grid Padel — Generador de Cuadros");
         titleLabel.getStyleClass().add("toolbar-title");
 
         tournamentListBox = new VBox(4);
@@ -103,7 +103,7 @@ public class MainView extends BorderPane {
 
     public void clearDisplay() {
         bracketPane.getChildren().clear();
-        titleLabel.setText("Grid Padel Tournament Generator");
+        titleLabel.setText("Grid Padel — Generador de Cuadros");
         if (controller != null) {
             controller.refreshTournamentList();
         }
@@ -117,7 +117,7 @@ public class MainView extends BorderPane {
         tournamentListBox.getChildren().clear();
 
         if (tournaments.isEmpty()) {
-            Label empty = new Label("No tournaments yet");
+            Label empty = new Label("No hay torneos todavía");
             empty.getStyleClass().add("sidebar-empty");
             tournamentListBox.getChildren().add(empty);
         } else {
@@ -129,9 +129,9 @@ public class MainView extends BorderPane {
                 if (current != null && current.id().equals(t.id())) {
                     item.getStyleClass().add("sidebar-item-active");
                 }
-                String pairInfo = t.pairCount() + " pairs";
+                String pairInfo = t.pairCount() + " parejas";
                 boolean hasBracket = !t.mainBracket().rounds().isEmpty();
-                if (hasBracket) pairInfo += " • bracket";
+                if (hasBracket) pairInfo += " • cuadro";
                 item.setTooltip(new Tooltip(pairInfo));
                 item.setOnMouseClicked(e -> {
                     if (controller != null) controller.openTournament(t);
@@ -159,7 +159,7 @@ public class MainView extends BorderPane {
     }
 
     private VBox createSidebar() {
-        Label header = new Label("Tournaments");
+        Label header = new Label("Torneos");
         header.getStyleClass().add("sidebar-header");
 
         ScrollPane listScroll = new ScrollPane(tournamentListBox);
@@ -177,16 +177,16 @@ public class MainView extends BorderPane {
     }
 
     private HBox createToolbar() {
-        Button newBtn = createButton("🆕 New", e -> { if (controller != null) controller.createNewTournament(); });
-        Button saveBtn = createButton("💾 Save", e -> { if (controller != null) controller.saveTournament(); });
-        Button editBtn = createButton("✏️ Rename", e -> { if (controller != null) controller.editTournamentName(); });
-        Button pairsBtn = createButton("👥 Pairs", e -> { if (controller != null) controller.managePairs(); });
-        Button generateBtn = createButton("⚡ Generate", e -> { if (controller != null) controller.generateBracket(); });
+        Button newBtn = createButton("🆕 Nuevo", e -> { if (controller != null) controller.createNewTournament(); });
+        Button saveBtn = createButton("💾 Guardar", e -> { if (controller != null) controller.saveTournament(); });
+        Button editBtn = createButton("✏️ Renombrar", e -> { if (controller != null) controller.editTournamentName(); });
+        Button pairsBtn = createButton("👥 Parejas", e -> { if (controller != null) controller.managePairs(); });
+        Button generateBtn = createButton("⚡ Generar", e -> { if (controller != null) controller.generateBracket(); });
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        Label zoomInfo = new Label("Ctrl + Scroll to zoom");
+        Label zoomInfo = new Label("Ctrl + Scroll para zoom");
         zoomInfo.getStyleClass().add("toolbar-hint");
 
         HBox toolbar = new HBox(8,

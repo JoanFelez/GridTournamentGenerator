@@ -18,11 +18,11 @@ public class TournamentHistoryDialog {
 
     public static Optional<HistoryResult> show(List<Tournament> tournaments) {
         Dialog<HistoryResult> dialog = new Dialog<>();
-        dialog.setTitle("Tournament History");
-        dialog.setHeaderText("Select a tournament to open or delete");
+        dialog.setTitle("Historial de torneos");
+        dialog.setHeaderText("Selecciona un torneo para abrir o eliminar");
 
-        ButtonType openButton = new ButtonType("Open", ButtonBar.ButtonData.OK_DONE);
-        ButtonType deleteButton = new ButtonType("Delete", ButtonBar.ButtonData.OTHER);
+        ButtonType openButton = new ButtonType("Abrir", ButtonBar.ButtonData.OK_DONE);
+        ButtonType deleteButton = new ButtonType("Eliminar", ButtonBar.ButtonData.OTHER);
         dialog.getDialogPane().getButtonTypes().addAll(openButton, deleteButton, ButtonType.CANCEL);
 
         ListView<Tournament> listView = new ListView<>();
@@ -34,7 +34,7 @@ public class TournamentHistoryDialog {
                 if (empty || item == null) {
                     setText(null);
                 } else {
-                    setText(item.name() + "  (" + item.pairCount() + " pairs)  —  " +
+                    setText(item.name() + "  (" + item.pairCount() + " parejas)  —  " +
                             item.updatedAt().format(FMT));
                 }
             }

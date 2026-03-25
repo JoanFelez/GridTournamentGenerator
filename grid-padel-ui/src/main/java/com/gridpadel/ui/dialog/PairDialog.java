@@ -11,17 +11,17 @@ public class PairDialog {
     public record PairData(String player1, String player2, Integer seed) {}
 
     public static Optional<PairData> showCreate() {
-        return show("Add Pair", "", "", null);
+        return show("Añadir pareja", "", "", null);
     }
 
     public static Optional<PairData> showEdit(String player1, String player2, Integer seed) {
-        return show("Edit Pair", player1, player2, seed);
+        return show("Editar pareja", player1, player2, seed);
     }
 
     private static Optional<PairData> show(String title, String p1, String p2, Integer currentSeed) {
         Dialog<PairData> dialog = new Dialog<>();
         dialog.setTitle(title);
-        dialog.setHeaderText("Enter player names");
+        dialog.setHeaderText("Introduce los nombres de los jugadores");
 
         ButtonType actionButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(actionButton, ButtonType.CANCEL);
@@ -32,17 +32,17 @@ public class PairDialog {
         grid.setPadding(new Insets(20, 150, 10, 10));
 
         TextField player1Field = new TextField(p1);
-        player1Field.setPromptText("Player 1 name");
+        player1Field.setPromptText("Nombre jugador 1");
         TextField player2Field = new TextField(p2);
-        player2Field.setPromptText("Player 2 name");
+        player2Field.setPromptText("Nombre jugador 2");
         TextField seedField = new TextField(currentSeed != null ? String.valueOf(currentSeed) : "");
-        seedField.setPromptText("Optional (1, 2, 3...)");
+        seedField.setPromptText("Opcional (1, 2, 3...)");
 
-        grid.add(new Label("Player 1:"), 0, 0);
+        grid.add(new Label("Jugador 1:"), 0, 0);
         grid.add(player1Field, 1, 0);
-        grid.add(new Label("Player 2:"), 0, 1);
+        grid.add(new Label("Jugador 2:"), 0, 1);
         grid.add(player2Field, 1, 1);
-        grid.add(new Label("Seed:"), 0, 2);
+        grid.add(new Label("Cabeza de serie:"), 0, 2);
         grid.add(seedField, 1, 2);
 
         dialog.getDialogPane().setContent(grid);

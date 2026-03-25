@@ -13,18 +13,18 @@ public class ByeAssignmentDialog {
         int byeCount = totalSlots - pairs.size();
         if (byeCount <= 0) {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("No BYEs Needed");
+            alert.setTitle("No se necesitan BYEs");
             alert.setHeaderText(null);
-            alert.setContentText("The number of pairs exactly fills the bracket. No BYEs are needed.");
+            alert.setContentText("El número de parejas completa el cuadro. No se necesitan BYEs.");
             alert.showAndWait();
             return Optional.of(Set.of());
         }
 
         Dialog<Set<Pair>> dialog = new Dialog<>();
-        dialog.setTitle("Assign BYEs");
-        dialog.setHeaderText("Select " + byeCount + " pair(s) to receive a BYE (automatic pass to round 2)");
+        dialog.setTitle("Asignar BYEs");
+        dialog.setHeaderText("Selecciona " + byeCount + " pareja(s) que recibirán BYE (pase directo a ronda 2)");
 
-        ButtonType okButton = new ButtonType("Confirm", ButtonBar.ButtonData.OK_DONE);
+        ButtonType okButton = new ButtonType("Confirmar", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(okButton, ButtonType.CANCEL);
 
         VBox content = new VBox(10);
@@ -34,24 +34,24 @@ public class ByeAssignmentDialog {
         for (Pair pair : pairs) {
             String label = pair.displayName();
             if (pair.seed().isDefined()) {
-                label += "  [Seed " + pair.seed().get() + "]";
+                label += "  [Cabeza de serie " + pair.seed().get() + "]";
             }
             CheckBox cb = new CheckBox(label);
             checkboxMap.put(cb, pair);
             content.getChildren().add(cb);
         }
 
-        Label infoLabel = new Label("0 of " + byeCount + " BYEs assigned");
+        Label infoLabel = new Label("0 de " + byeCount + " BYEs asignados");
         infoLabel.setStyle("-fx-font-style: italic; -fx-text-fill: #666;");
         content.getChildren().addFirst(infoLabel);
 
         for (CheckBox cb : checkboxMap.keySet()) {
             cb.setOnAction(e -> {
                 long selected = checkboxMap.keySet().stream().filter(CheckBox::isSelected).count();
-                infoLabel.setText(selected + " of " + byeCount + " BYEs assigned");
+                infoLabel.setText(selected + " de " + byeCount + " BYEs asignados");
                 if (selected > byeCount) {
                     cb.setSelected(false);
-                    infoLabel.setText(byeCount + " of " + byeCount + " BYEs assigned (max reached)");
+                    infoLabel.setText(byeCount + " de " + byeCount + " BYEs asignados (máximo alcanzado)");
                 }
             });
         }

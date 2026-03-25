@@ -37,7 +37,7 @@ public class TournamentController {
                     mainView.updateTitle(currentTournament.name());
                     refreshTournamentList();
                     managePairs();
-                }).onFailure(e -> showError("Error creating tournament", e.getMessage()))
+                }).onFailure(e -> showError("Error al crear torneo", e.getMessage()))
         );
     }
 
@@ -49,7 +49,7 @@ public class TournamentController {
                     refreshTournament();
                     mainView.updateTitle(currentTournament.name());
                     refreshTournamentList();
-                }).onFailure(e -> showError("Error updating tournament", e.getMessage()))
+                }).onFailure(e -> showError("Error al actualizar torneo", e.getMessage()))
         );
     }
 
@@ -61,7 +61,7 @@ public class TournamentController {
                     refreshTournament();
                     refreshDisplay();
                     refreshTournamentList();
-                }).onFailure(e -> showError("Error managing pairs", e.getMessage()))
+                }).onFailure(e -> showError("Error al gestionar parejas", e.getMessage()))
         );
     }
 
@@ -81,14 +81,14 @@ public class TournamentController {
     public void generateBracket() {
         if (currentTournament == null) return;
         if (currentTournament.pairCount() < 2) {
-            showError("Cannot generate bracket", "At least 2 pairs are required.");
+            showError("No se puede generar el cuadro", "Se necesitan al menos 2 parejas.");
             return;
         }
         Try.run(() -> {
             tournamentService.generateBracket(currentTournament.id());
             refreshTournament();
             refreshDisplay();
-        }).onFailure(e -> showError("Error generating bracket", e.getMessage()));
+        }).onFailure(e -> showError("Error al generar cuadro", e.getMessage()));
     }
 
     public void onMatchClicked(Match match) {
@@ -105,15 +105,15 @@ public class TournamentController {
                 && !match.isByeMatch();
 
         Alert choiceAlert = new Alert(Alert.AlertType.CONFIRMATION);
-        choiceAlert.setTitle("Match Action");
+        choiceAlert.setTitle("Acción del partido");
         choiceAlert.setHeaderText(buildMatchHeader(match));
 
-        ButtonType resultBtn = new ButtonType("Enter Result");
-        ButtonType detailsBtn = new ButtonType("Edit Details");
-        ButtonType cancelBtn = new ButtonType("Cancel", ButtonType.CANCEL.getButtonData());
+        ButtonType resultBtn = new ButtonType("Introducir resultado");
+        ButtonType detailsBtn = new ButtonType("Editar detalles");
+        ButtonType cancelBtn = new ButtonType("Cancelar", ButtonType.CANCEL.getButtonData());
 
         if (isR1Main) {
-            ButtonType swapBtn = new ButtonType("Swap Pair");
+            ButtonType swapBtn = new ButtonType("Intercambiar pareja");
             choiceAlert.getButtonTypes().setAll(resultBtn, detailsBtn, swapBtn, cancelBtn);
             choiceAlert.showAndWait().ifPresent(chosen -> {
                 if (chosen == resultBtn) {
@@ -149,7 +149,7 @@ public class TournamentController {
                     }
                     refreshTournament();
                     refreshDisplay();
-                }).onFailure(e -> showError("Invalid result", e.getMessage()))
+                }).onFailure(e -> showError("Resultado inválido", e.getMessage()))
         );
     }
 
@@ -166,7 +166,7 @@ public class TournamentController {
                     }
                     refreshTournament();
                     refreshDisplay();
-                }).onFailure(e -> showError("Error updating match details", e.getMessage()))
+                }).onFailure(e -> showError("Error al actualizar detalles", e.getMessage()))
         );
     }
 
@@ -182,8 +182,8 @@ public class TournamentController {
                                     swap.targetPair().id());
                             refreshTournament();
                             refreshDisplay();
-                            showInfo("Swap Complete", "Pairs swapped successfully.");
-                        }).onFailure(e -> showError("Swap failed", e.getMessage()))
+                            showInfo("Intercambio completado", "Parejas intercambiadas correctamente.");
+                        }).onFailure(e -> showError("Error en el intercambio", e.getMessage()))
                 )
         );
     }
@@ -198,14 +198,14 @@ public class TournamentController {
     public void refreshTournamentList() {
         Try.of(() -> tournamentService.listTournaments())
                 .onSuccess(tournaments -> mainView.updateTournamentList(tournaments.toJavaList()))
-                .onFailure(e -> showError("Error loading tournaments", e.getMessage()));
+                .onFailure(e -> showError("Error al cargar torneos", e.getMessage()));
     }
 
     public void openTournamentHistory() {
         Try.of(() -> tournamentService.listTournaments())
                 .onSuccess(tournaments -> {
                     if (tournaments.isEmpty()) {
-                        showInfo("No Tournaments", "No saved tournaments found. Create a new one.");
+                        showInfo("Sin torneos", "No se encontraron torneos guardados. Crea uno nuevo.");
                         return;
                     }
                     TournamentHistoryDialog.show(tournaments.toJavaList()).ifPresent(result -> {
@@ -213,7 +213,7 @@ public class TournamentController {
                             case OPEN -> openTournament(result.tournament());
                             case DELETE -> {
                                 Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
-                                        "Delete tournament '" + result.tournament().name() + "'?");
+                                        "¿Eliminar torneo '" + result.tournament().name() + "'?");
                                 confirm.showAndWait().filter(b -> b == ButtonType.OK).ifPresent(b -> {
                                     tournamentService.deleteTournament(result.tournament().id());
                                     if (currentTournament != null &&
@@ -227,18 +227,23 @@ public class TournamentController {
                         }
                     });
                 })
-                .onFailure(e -> showError("Error loading tournaments", e.getMessage()));
+                .onFailure(e -> showError("Error al cargar torneos", e.getMessage()));
     }
 
     public void saveTournament() {
         if (currentTournament == null) {
-            showInfo("Nothing to save", "No tournament is currently open.");
+            showInfo("Nada que guardar", "No hay ningún torneo abierto.");
             return;
         }
-        showInfo("Saved", "Tournament '" + currentTournament.name() + "' saved successfully.");
+        showInfo("Guardado", "Torneo '" + currentTournament.name() + "' guardado correctamente.");
     }
 
     private void syncPairs(java.util.List<PairManagementDialog.PairEntry> entries) {
+        if (!currentTournament.mainBracket().rounds().isEmpty()) {
+            tournamentService.clearBrackets(currentTournament.id());
+            refreshTournament();
+        }
+
         List.ofAll(currentTournament.pairs())
                 .forEach(p -> tournamentService.removePair(currentTournament.id(), p.id()));
         refreshTournament();
