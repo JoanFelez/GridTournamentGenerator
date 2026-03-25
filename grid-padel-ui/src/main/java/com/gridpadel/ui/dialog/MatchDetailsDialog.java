@@ -16,11 +16,11 @@ public class MatchDetailsDialog {
 
     public static Optional<MatchDetails> show(Match match) {
         Dialog<MatchDetails> dialog = new Dialog<>();
-        dialog.setTitle("Match Details");
+        dialog.setTitle("Detalles del partido");
         dialog.setHeaderText(buildHeaderText(match));
 
-        ButtonType saveButton = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
-        ButtonType clearButton = new ButtonType("Clear", ButtonBar.ButtonData.OTHER);
+        ButtonType saveButton = new ButtonType("Guardar", ButtonBar.ButtonData.OK_DONE);
+        ButtonType clearButton = new ButtonType("Borrar", ButtonBar.ButtonData.OTHER);
         dialog.getDialogPane().getButtonTypes().addAll(saveButton, clearButton, ButtonType.CANCEL);
 
         GridPane grid = new GridPane();
@@ -29,7 +29,7 @@ public class MatchDetailsDialog {
         grid.setPadding(new Insets(20, 150, 10, 10));
 
         TextField locationField = new TextField(match.location().map(l -> l.value()).getOrElse(""));
-        locationField.setPromptText("Court name or location");
+        locationField.setPromptText("Nombre de pista o ubicación");
         locationField.setPrefWidth(250);
 
         DatePicker datePicker = new DatePicker();
@@ -42,11 +42,11 @@ public class MatchDetailsDialog {
                 match.dateTime().map(dt -> dt.value().getMinute()).getOrElse(0), 15);
         minuteSpinner.setPrefWidth(70);
 
-        grid.add(new Label("Location:"), 0, 0);
+        grid.add(new Label("Ubicación:"), 0, 0);
         grid.add(locationField, 1, 0, 3, 1);
-        grid.add(new Label("Date:"), 0, 1);
+        grid.add(new Label("Fecha:"), 0, 1);
         grid.add(datePicker, 1, 1, 3, 1);
-        grid.add(new Label("Time:"), 0, 2);
+        grid.add(new Label("Hora:"), 0, 2);
         grid.add(hourSpinner, 1, 2);
         grid.add(new Label(":"), 2, 2);
         grid.add(minuteSpinner, 3, 2);

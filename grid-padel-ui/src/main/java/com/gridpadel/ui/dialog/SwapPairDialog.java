@@ -16,10 +16,10 @@ public class SwapPairDialog {
 
     public static Optional<SwapResult> show(Match currentMatch, Round r1) {
         Dialog<SwapResult> dialog = new Dialog<>();
-        dialog.setTitle("Swap Pair");
-        dialog.setHeaderText("Select a pair from this match and a pair to swap with");
+        dialog.setTitle("Intercambiar pareja");
+        dialog.setHeaderText("Selecciona una pareja de este partido y otra con la que intercambiar");
 
-        ButtonType swapButton = new ButtonType("Swap", ButtonBar.ButtonData.OK_DONE);
+        ButtonType swapButton = new ButtonType("Intercambiar", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(swapButton, ButtonType.CANCEL);
 
         GridPane grid = new GridPane();
@@ -28,7 +28,7 @@ public class SwapPairDialog {
         grid.setPadding(new Insets(20, 20, 10, 10));
 
         // "From this match" selector
-        grid.add(new Label("Pair to move:"), 0, 0);
+        grid.add(new Label("Pareja a mover:"), 0, 0);
         ComboBox<PairItem> fromCombo = new ComboBox<>();
         if (currentMatch.pair1() != null) {
             fromCombo.getItems().add(new PairItem(currentMatch.pair1()));
@@ -43,7 +43,7 @@ public class SwapPairDialog {
         grid.add(fromCombo, 1, 0);
 
         // "Swap with" selector — all pairs from OTHER R1 matches (including BYE)
-        grid.add(new Label("Swap with:"), 0, 1);
+        grid.add(new Label("Intercambiar con:"), 0, 1);
         ComboBox<PairItem> toCombo = new ComboBox<>();
         for (Match m : r1.matches()) {
             if (m.id().equals(currentMatch.id())) continue;
@@ -68,7 +68,7 @@ public class SwapPairDialog {
             PairItem from = fromCombo.getValue();
             PairItem to = toCombo.getValue();
             if (from != null && to != null) {
-                previewLabel.setText("Will swap \"" + from + "\" ↔ \"" + to + "\"");
+                previewLabel.setText("Se intercambiará \"" + from + "\" ↔ \"" + to + "\"");
             } else {
                 previewLabel.setText("");
             }

@@ -12,19 +12,19 @@ public class TournamentDialog {
     public record TournamentData(String name) {}
 
     public static Optional<TournamentData> showCreate() {
-        return show("New Tournament", "", false);
+        return show("Nuevo torneo", "", false);
     }
 
     public static Optional<TournamentData> showEdit(String currentName) {
-        return show("Edit Tournament", currentName, true);
+        return show("Editar torneo", currentName, true);
     }
 
     private static Optional<TournamentData> show(String title, String currentName, boolean isEdit) {
         Dialog<TournamentData> dialog = new Dialog<>();
         dialog.setTitle(title);
-        dialog.setHeaderText(isEdit ? "Edit tournament name" : "Create a new tournament");
+        dialog.setHeaderText(isEdit ? "Editar nombre del torneo" : "Crear un nuevo torneo");
 
-        ButtonType actionButton = new ButtonType(isEdit ? "Save" : "Create", ButtonBar.ButtonData.OK_DONE);
+        ButtonType actionButton = new ButtonType(isEdit ? "Guardar" : "Crear", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(actionButton, ButtonType.CANCEL);
 
         GridPane grid = new GridPane();
@@ -33,10 +33,10 @@ public class TournamentDialog {
         grid.setPadding(new Insets(20, 150, 10, 10));
 
         TextField nameField = new TextField(currentName);
-        nameField.setPromptText("Tournament name");
+        nameField.setPromptText("Nombre del torneo");
         nameField.setPrefWidth(250);
 
-        grid.add(new Label("Name:"), 0, 0);
+        grid.add(new Label("Nombre:"), 0, 0);
         grid.add(nameField, 1, 0);
 
         dialog.getDialogPane().setContent(grid);

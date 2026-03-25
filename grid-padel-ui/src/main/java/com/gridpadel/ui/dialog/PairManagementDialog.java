@@ -21,10 +21,10 @@ public class PairManagementDialog {
     public static Optional<List<PairEntry>> show(List<Pair> existingPairs,
                                                   Function<File, List<PairEntry>> importParser) {
         Dialog<List<PairEntry>> dialog = new Dialog<>();
-        dialog.setTitle("Manage Pairs");
-        dialog.setHeaderText("Add, edit, or remove pairs (max 32)");
+        dialog.setTitle("Gestionar parejas");
+        dialog.setHeaderText("Añadir, editar o eliminar parejas (máx. 32)");
 
-        ButtonType saveButton = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
+        ButtonType saveButton = new ButtonType("Guardar", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(saveButton, ButtonType.CANCEL);
 
         ListView<PairEntry> listView = new ListView<>();
@@ -44,7 +44,7 @@ public class PairManagementDialog {
                     setText(null);
                     setGraphic(null);
                 } else {
-                    String seedText = item.seed() != null ? " [Seed " + item.seed() + "]" : "";
+                    String seedText = item.seed() != null ? " [Cabeza de serie " + item.seed() + "]" : "";
                     Label label = new Label(item.player1() + " / " + item.player2() + seedText);
                     HBox.setHgrow(label, Priority.ALWAYS);
                     label.setMaxWidth(Double.MAX_VALUE);
@@ -53,14 +53,14 @@ public class PairManagementDialog {
             }
         });
 
-        Button addBtn = new Button("Add Pair");
-        Button editBtn = new Button("Edit");
-        Button removeBtn = new Button("Remove");
-        Button importBtn = new Button("Import CSV/XLS");
+        Button addBtn = new Button("Añadir pareja");
+        Button editBtn = new Button("Editar");
+        Button removeBtn = new Button("Eliminar");
+        Button importBtn = new Button("Importar CSV/XLS");
 
         addBtn.setOnAction(e -> {
             if (listView.getItems().size() >= 32) {
-                showAlert("Maximum of 32 pairs reached.");
+                showAlert("Se ha alcanzado el máximo de 32 parejas.");
                 return;
             }
             PairDialog.showCreate().ifPresent(data ->
@@ -82,11 +82,11 @@ public class PairManagementDialog {
 
         importBtn.setOnAction(e -> {
             FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle("Import Pairs from File");
+            fileChooser.setTitle("Importar parejas desde archivo");
             fileChooser.getExtensionFilters().addAll(
-                    new FileChooser.ExtensionFilter("All Supported", "*.csv", "*.xls", "*.xlsx"),
-                    new FileChooser.ExtensionFilter("CSV Files", "*.csv"),
-                    new FileChooser.ExtensionFilter("Excel Files", "*.xls", "*.xlsx")
+                    new FileChooser.ExtensionFilter("Todos los formatos", "*.csv", "*.xls", "*.xlsx"),
+                    new FileChooser.ExtensionFilter("Archivos CSV", "*.csv"),
+                    new FileChooser.ExtensionFilter("Archivos Excel", "*.xls", "*.xlsx")
             );
             File file = fileChooser.showOpenDialog(dialog.getDialogPane().getScene().getWindow());
             if (file != null) {
@@ -94,13 +94,13 @@ public class PairManagementDialog {
                     List<PairEntry> imported = importParser.apply(file);
                     int remaining = 32 - listView.getItems().size();
                     if (imported.size() > remaining) {
-                        showAlert("Only " + remaining + " more pair(s) can be added (max 32). "
-                                + "Importing the first " + remaining + " from the file.");
+                        showAlert("Solo se pueden añadir " + remaining + " pareja(s) más (máx. 32). "
+                                + "Se importan las primeras " + remaining + " del archivo.");
                         imported = imported.subList(0, remaining);
                     }
                     listView.getItems().addAll(imported);
                 } catch (Exception ex) {
-                    showAlert("Import error: " + ex.getMessage());
+                    showAlert("Error de importación: " + ex.getMessage());
                 }
             }
         });
@@ -124,7 +124,7 @@ public class PairManagementDialog {
 
     private static void showAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle("Warning");
+        alert.setTitle("Aviso");
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();

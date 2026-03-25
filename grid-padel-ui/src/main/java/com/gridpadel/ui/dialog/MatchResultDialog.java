@@ -19,11 +19,11 @@ public class MatchResultDialog {
 
     public static Optional<ResultAction> show(Match match) {
         Dialog<ResultAction> dialog = new Dialog<>();
-        dialog.setTitle("Enter Match Result");
+        dialog.setTitle("Introducir resultado");
 
-        ButtonType saveButton = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
+        ButtonType saveButton = new ButtonType("Guardar", ButtonBar.ButtonData.OK_DONE);
         ButtonType woButton = new ButtonType("Walkover (W.O.)", ButtonBar.ButtonData.LEFT);
-        ButtonType clearButton = new ButtonType("Clear Result", ButtonBar.ButtonData.OTHER);
+        ButtonType clearButton = new ButtonType("Borrar resultado", ButtonBar.ButtonData.OTHER);
         dialog.getDialogPane().getButtonTypes().addAll(saveButton, woButton, clearButton, ButtonType.CANCEL);
 
         GridPane grid = new GridPane();
@@ -32,7 +32,7 @@ public class MatchResultDialog {
         grid.setPadding(new Insets(20, 20, 10, 20));
         grid.setAlignment(javafx.geometry.Pos.CENTER);
 
-        Label headerLabel = new Label("Enter the score for each set");
+        Label headerLabel = new Label("Introduce el resultado de cada set");
         headerLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
         headerLabel.setMaxWidth(Double.MAX_VALUE);
         headerLabel.setAlignment(javafx.geometry.Pos.CENTER);
@@ -108,13 +108,13 @@ public class MatchResultDialog {
     }
 
     private static ResultAction showWalkoverDialog(Match match) {
-        String p1Name = match.pair1() != null ? match.pair1().displayName() : "Pair 1";
-        String p2Name = match.pair2() != null ? match.pair2().displayName() : "Pair 2";
+        String p1Name = match.pair1() != null ? match.pair1().displayName() : "Pareja 1";
+        String p2Name = match.pair2() != null ? match.pair2().displayName() : "Pareja 2";
 
         ChoiceDialog<String> woDialog = new ChoiceDialog<>(p1Name, p1Name, p2Name);
         woDialog.setTitle("Walkover");
-        woDialog.setHeaderText("Which pair can't play?");
-        woDialog.setContentText("Select the pair giving W.O.:");
+        woDialog.setHeaderText("¿Qué pareja no puede jugar?");
+        woDialog.setContentText("Selecciona la pareja que da W.O.:");
 
         return woDialog.showAndWait()
                 .map(selected -> {

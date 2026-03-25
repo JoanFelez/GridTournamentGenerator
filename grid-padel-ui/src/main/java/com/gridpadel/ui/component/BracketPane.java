@@ -48,15 +48,15 @@ public class BracketPane extends Pane {
         container.setAlignment(Pos.TOP_CENTER);
         container.setMinWidth(600);
 
-        Label title = new Label("🏸 Grid Padel Tournament Generator");
+        Label title = new Label("🏸 Grid Padel — Generador de Cuadros");
         title.getStyleClass().add("welcome-title");
 
         if (tournaments.isEmpty()) {
-            Label emptyMsg = new Label("No tournaments yet.\nClick 🆕 New to create your first tournament.");
+            Label emptyMsg = new Label("No hay torneos todavía.\nHaz clic en 🆕 Nuevo para crear tu primer torneo.");
             emptyMsg.getStyleClass().add("welcome-empty");
             container.getChildren().addAll(title, emptyMsg);
         } else {
-            Label subtitle = new Label("Select a tournament to open:");
+            Label subtitle = new Label("Selecciona un torneo para abrir:");
             subtitle.getStyleClass().add("welcome-subtitle");
 
             FlowPane grid = new FlowPane(16, 16);
@@ -80,9 +80,9 @@ public class BracketPane extends Pane {
         Label name = new Label(tournament.name());
         name.getStyleClass().add("welcome-card-name");
 
-        String pairsText = tournament.pairCount() + " pair" + (tournament.pairCount() != 1 ? "s" : "");
+        String pairsText = tournament.pairCount() + " pareja" + (tournament.pairCount() != 1 ? "s" : "");
         boolean hasBracket = !tournament.mainBracket().rounds().isEmpty();
-        String statusText = hasBracket ? "📊 Bracket generated" : "📝 Draft";
+        String statusText = hasBracket ? "📊 Cuadro generado" : "📝 Borrador";
 
         Label pairs = new Label("👥 " + pairsText);
         pairs.getStyleClass().add("welcome-card-detail");
@@ -146,19 +146,19 @@ public class BracketPane extends Pane {
         summary.setStyle("-fx-background-color: #f8f9fa; -fx-background-radius: 8;");
 
         javafx.scene.control.Label title = new javafx.scene.control.Label(
-                tournament.name() + " — " + tournament.pairCount() + " pair(s) registered");
+                tournament.name() + " — " + tournament.pairCount() + " pareja(s) registrada(s)");
         title.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
         summary.getChildren().add(title);
 
         if (tournament.pairCount() > 0) {
-            javafx.scene.control.Label header = new javafx.scene.control.Label("Registered Pairs:");
+            javafx.scene.control.Label header = new javafx.scene.control.Label("Parejas registradas:");
             header.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #555; -fx-padding: 10 0 4 0;");
             summary.getChildren().add(header);
 
             tournament.pairs().zipWithIndex().forEach(tuple -> {
                 var pair = tuple._1;
                 int idx = tuple._2.intValue() + 1;
-                String seedText = pair.isSeeded() ? " [Seed " + pair.seed().get() + "]" : "";
+                String seedText = pair.isSeeded() ? " [Cabeza de serie " + pair.seed().get() + "]" : "";
                 javafx.scene.control.Label pairLabel = new javafx.scene.control.Label(
                         idx + ". " + pair.player1Name().value() + " / " + pair.player2Name().value() + seedText);
                 pairLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #333;");
@@ -166,12 +166,12 @@ public class BracketPane extends Pane {
             });
 
             javafx.scene.control.Label hint = new javafx.scene.control.Label(
-                    "Click ⚡ Generate to create the bracket");
+                    "Haz clic en ⚡ Generar para crear el cuadro");
             hint.setStyle("-fx-font-size: 12px; -fx-text-fill: #888; -fx-padding: 12 0 0 0;");
             summary.getChildren().add(hint);
         } else {
             javafx.scene.control.Label hint = new javafx.scene.control.Label(
-                    "Click 👥 Pairs to add pairs, then ⚡ Generate to create the bracket");
+                    "Haz clic en 👥 Parejas para añadir parejas, luego ⚡ Generar para crear el cuadro");
             hint.setStyle("-fx-font-size: 13px; -fx-text-fill: #888; -fx-padding: 8 0 0 0;");
             summary.getChildren().add(hint);
         }
@@ -213,7 +213,7 @@ public class BracketPane extends Pane {
         if (!mainRoundX.isEmpty()) {
             int firstKey = mainRoundX.keySet().iterator().next();
             double r1X = mainRoundX.get(firstKey);
-            Label mainLabel = new Label("MAIN BRACKET →");
+            Label mainLabel = new Label("CUADRO PRINCIPAL →");
             mainLabel.getStyleClass().add("bracket-label");
             mainLabel.getStyleClass().add("bracket-label-main");
             mainLabel.setLayoutX(r1X + boxCenter - 60);
@@ -225,7 +225,7 @@ public class BracketPane extends Pane {
         if (!consolRoundX.isEmpty()) {
             int firstKey = consolRoundX.keySet().iterator().next();
             double consolR1X = consolRoundX.get(firstKey);
-            Label consolLabel = new Label("← CONSOLATION BRACKET");
+            Label consolLabel = new Label("← CUADRO DE CONSOLACIÓN");
             consolLabel.getStyleClass().add("bracket-label");
             consolLabel.getStyleClass().add("bracket-label-consolation");
             consolLabel.setLayoutX(consolR1X + boxCenter - 80);
@@ -262,8 +262,8 @@ public class BracketPane extends Pane {
         return switch (fromFinal) {
             case 0 -> "Final";
             case 1 -> "Semifinal";
-            case 2 -> "1/4";
-            case 3 -> "1/8";
+            case 2 -> "Cuartos";
+            case 3 -> "Octavos";
             case 4 -> "1/16";
             case 5 -> "1/32";
             default -> "R" + roundNumber;
