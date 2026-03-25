@@ -230,6 +230,34 @@ public class TournamentController {
                 .onFailure(e -> showError("Error al cargar torneos", e.getMessage()));
     }
 
+    public void exportPdf() {
+        if (currentTournament == null) {
+            showInfo("Sin torneo", "No hay ningún torneo abierto.");
+            return;
+        }
+        if (currentTournament.mainBracket().rounds().isEmpty()) {
+            showInfo("Sin cuadro", "Genera el cuadro antes de exportar.");
+            return;
+        }
+
+        javafx.stage.FileChooser fileChooser = new javafx.stage.FileChooser();
+        fileChooser.setTitle("Exportar cuadro a PDF");
+        fileChooser.setInitialFileName(currentTournament.name().replaceAll("[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ ]", "_") + ".pdf");
+        fileChooser.getExtensionFilters().add(
+                new javafx.stage.FileChooser.ExtensionFilter("PDF (*.pdf)", "*.pdf"));
+
+        javafx.stage.Window window = mainView.getScene() != null ? mainView.getScene().getWindow() : null;
+        java.io.File file = fileChooser.showSaveDialog(window);
+        if (file == null) return;
+
+        Try.run(() -> {
+            try (java.io.FileOutputStream fos = new java.io.FileOutputStream(file)) {
+                tournamentService.exportToPdf(currentTournament.id(), fos);
+            }
+            showInfo("PDF exportado", "Cuadro exportado correctamente a:\n" + file.getAbsolutePath());
+        }).onFailure(e -> showError("Error al exportar PDF", e.getMessage()));
+    }
+
     public void saveTournament() {
         if (currentTournament == null) {
             showInfo("Nada que guardar", "No hay ningún torneo abierto.");
