@@ -55,7 +55,7 @@ public class MainView extends BorderPane {
             }
         });
 
-        titleLabel = new Label("Grid Padel — Generador de Cuadros");
+        titleLabel = new Label("");
         titleLabel.getStyleClass().add("toolbar-title");
 
         tournamentListBox = new VBox(4);
@@ -107,14 +107,17 @@ public class MainView extends BorderPane {
 
     public void clearDisplay() {
         bracketPane.getChildren().clear();
-        titleLabel.setText("Grid Padel — Generador de Cuadros");
+        titleLabel.setText("");
+        resetZoom();
+        bracketScrollPane.setHvalue(0);
+        bracketScrollPane.setVvalue(0);
         if (controller != null) {
             controller.refreshTournamentList();
         }
     }
 
     public void updateTitle(String tournamentName) {
-        titleLabel.setText("Grid Padel — " + tournamentName);
+        titleLabel.setText(tournamentName);
     }
 
     public void updateTournamentList(List<Tournament> tournaments) {
@@ -139,12 +142,37 @@ public class MainView extends BorderPane {
                         .anyMatch(t -> t.category() != null && !t.category().isBlank());
 
                 if (hasCategories && group.size() > 1) {
-                    // Tournament header
-                    Label header = new Label("🏆 " + entry.getKey());
-                    header.getStyleClass().add("sidebar-category");
+                    // Category items container (foldable)
+                    VBox categoryBox = new VBox();
+                    boolean hasActiveCat = group.stream()
+                            .anyMatch(t -> current != null && current.id().equals(t.id()));
+
+                    // Tournament header with fold/unfold arrow
+                    Label arrow = new Label(hasActiveCat ? "▼" : "▶");
+                    arrow.setStyle("-fx-font-size: 9px; -fx-text-fill: #1565c0;");
+                    Label headerText = new Label("🏆 " + entry.getKey());
+                    headerText.setStyle("-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-fill: #1565c0;");
+                    javafx.scene.layout.HBox header = new javafx.scene.layout.HBox(4, arrow, headerText);
+                    header.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
                     header.setMaxWidth(Double.MAX_VALUE);
-                    header.setStyle("-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-fill: #1565c0; -fx-padding: 6 0 2 4;");
+                    header.setStyle("-fx-padding: 6 0 2 4; -fx-cursor: hand;");
+                    header.setOnMouseClicked(e -> {
+                        if (categoryBox.isVisible()) {
+                            categoryBox.setVisible(false);
+                            categoryBox.setManaged(false);
+                            arrow.setText("▶");
+                        } else {
+                            categoryBox.setVisible(true);
+                            categoryBox.setManaged(true);
+                            arrow.setText("▼");
+                        }
+                    });
                     tournamentListBox.getChildren().add(header);
+
+                    // Category sub-items
+                    categoryBox.setVisible(hasActiveCat);
+                    categoryBox.setManaged(hasActiveCat);
+                    if (!hasActiveCat) arrow.setText("▶");
 
                     for (Tournament t : group) {
                         String label = t.category() != null && !t.category().isBlank()
@@ -162,8 +190,9 @@ public class MainView extends BorderPane {
                         item.setOnMouseClicked(e -> {
                             if (controller != null) controller.openTournament(t);
                         });
-                        tournamentListBox.getChildren().add(item);
+                        categoryBox.getChildren().add(item);
                     }
+                    tournamentListBox.getChildren().add(categoryBox);
                 } else {
                     // Single tournament or no categories — show flat
                     for (Tournament t : group) {
@@ -224,8 +253,12 @@ public class MainView extends BorderPane {
     }
 
     private VBox createSidebar() {
-        Label header = new Label("Torneos");
+        Label header = new Label("📋 Torneos");
         header.getStyleClass().add("sidebar-header");
+        header.setStyle(header.getStyle() + "-fx-cursor: hand;");
+        header.setOnMouseClicked(e -> {
+            if (controller != null) controller.goHome();
+        });
 
         ScrollPane listScroll = new ScrollPane(tournamentListBox);
         listScroll.setFitToWidth(true);

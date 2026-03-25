@@ -33,12 +33,17 @@ public class GitHubPagesPublisher implements BracketPublishPort {
     }
 
     private void generateHtmlFiles(List<Tournament> tournaments, Path outputDir) throws IOException {
-        String indexHtml = htmlGenerator.generateIndexPage(tournaments);
+        // Only publish tournaments that have a generated bracket
+        List<Tournament> withBracket = tournaments.stream()
+                .filter(t -> !t.mainBracket().rounds().isEmpty())
+                .collect(java.util.stream.Collectors.toList());
+
+        String indexHtml = htmlGenerator.generateIndexPage(withBracket);
         Files.writeString(outputDir.resolve("index.html"), indexHtml);
 
         // Group by tournament name
         java.util.LinkedHashMap<String, java.util.List<Tournament>> byName = new java.util.LinkedHashMap<>();
-        for (Tournament t : tournaments) {
+        for (Tournament t : withBracket) {
             byName.computeIfAbsent(t.name(), k -> new java.util.ArrayList<>()).add(t);
         }
 
@@ -50,8 +55,7 @@ public class GitHubPagesPublisher implements BracketPublishPort {
         }
 
         // Generate per-category bracket pages
-        for (Tournament t : tournaments) {
-            if (t.mainBracket().rounds().isEmpty()) continue;
+        for (Tournament t : withBracket) {
             String slug = HtmlBracketGenerator.slugify(t.name() + "-" + t.category());
             String html = htmlGenerator.generateTournamentPage(t);
             Files.writeString(outputDir.resolve(slug + ".html"), html);
@@ -105,7 +109,7 @@ public class GitHubPagesPublisher implements BracketPublishPort {
         Matcher matcher = httpsPattern.matcher(repoUrl);
         if (matcher.find()) {
             String owner = matcher.group(1).toLowerCase();
-            String repo = matcher.group(2).toLowerCase();
+            String repo = matcher.group(2);
             return "https://" + owner + ".github.io/" + repo + "/";
         }
         return repoUrl;

@@ -247,6 +247,12 @@ public class TournamentController {
         refreshTournamentList();
     }
 
+    public void goHome() {
+        currentTournament = null;
+        mainView.clearDisplay();
+        refreshTournamentList();
+    }
+
     public void refreshTournamentList() {
         Try.of(() -> tournamentService.listTournaments())
                 .onSuccess(tournaments -> mainView.updateTournamentList(tournaments.toJavaList()))
@@ -298,7 +304,7 @@ public class TournamentController {
             confirm.showAndWait().filter(b -> b == ButtonType.OK).ifPresent(b -> {
                 Try.of(() -> {
                     String url = tournamentService.publishToGitHubPages(repoUrl);
-                    showInfo("Publicado", "Cuadros publicados correctamente.\n\n" + url);
+                    showPublishSuccess(url);
                     return url;
                 }).onFailure(e -> showError("Error al publicar", e.getMessage()));
             });
@@ -414,6 +420,30 @@ public class TournamentController {
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void showPublishSuccess(String url) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Publicado");
+        alert.setHeaderText("Cuadros publicados correctamente.");
+
+        javafx.scene.control.Hyperlink link = new javafx.scene.control.Hyperlink(url);
+        link.setOnAction(e -> {
+            alert.close();
+            new Thread(() -> {
+                try {
+                    java.awt.Desktop.getDesktop().browse(new java.net.URI(url));
+                } catch (Exception ex) {
+                    javafx.application.Platform.runLater(() ->
+                            showError("Error", "No se pudo abrir el navegador: " + ex.getMessage()));
+                }
+            }).start();
+        });
+
+        javafx.scene.layout.VBox content = new javafx.scene.layout.VBox(8);
+        content.getChildren().addAll(new javafx.scene.control.Label("URL:"), link);
+        alert.getDialogPane().setContent(content);
         alert.showAndWait();
     }
 }
