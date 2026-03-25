@@ -12,13 +12,12 @@ import javafx.scene.layout.*;
 import javafx.scene.transform.Scale;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 public class MainView extends BorderPane {
 
     private static final double MIN_ZOOM = 0.3;
     private static final double MAX_ZOOM = 2.0;
-    private static final double ZOOM_STEP = 0.1;
+
 
     private final BracketPane bracketPane;
     private final Group zoomGroup;

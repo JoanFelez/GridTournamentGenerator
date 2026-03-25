@@ -6,7 +6,6 @@ import com.gridpadel.domain.model.Round;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
 
 import java.util.Optional;
 

@@ -2,7 +2,6 @@ package com.gridpadel.domain.service;
 
 import com.gridpadel.domain.model.*;
 import com.gridpadel.domain.model.vo.*;
-import io.vavr.collection.List;
 
 public class MatchAdvancementService {
 

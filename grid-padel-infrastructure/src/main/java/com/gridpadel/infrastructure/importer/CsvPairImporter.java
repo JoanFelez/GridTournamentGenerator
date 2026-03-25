@@ -3,7 +3,6 @@ package com.gridpadel.infrastructure.importer;
 import com.gridpadel.domain.port.PairImportPort;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
-import com.opencsv.exceptions.CsvException;
 import io.vavr.collection.List;
 import io.vavr.control.Try;
 import org.springframework.stereotype.Component;
