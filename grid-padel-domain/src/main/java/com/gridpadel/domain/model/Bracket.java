@@ -30,6 +30,10 @@ public class Bracket {
         rounds = rounds.append(Objects.requireNonNull(round));
     }
 
+    public void clearRounds() {
+        rounds = List.empty();
+    }
+
     public Option<Round> round(int roundNumber) {
         return rounds.find(r -> r.roundNumber() == roundNumber);
     }

@@ -239,6 +239,11 @@ public class TournamentController {
     }
 
     private void syncPairs(java.util.List<PairManagementDialog.PairEntry> entries) {
+        if (!currentTournament.mainBracket().rounds().isEmpty()) {
+            tournamentService.clearBrackets(currentTournament.id());
+            refreshTournament();
+        }
+
         List.ofAll(currentTournament.pairs())
                 .forEach(p -> tournamentService.removePair(currentTournament.id(), p.id()));
         refreshTournament();
