@@ -28,7 +28,7 @@ public class GridPadelApplication extends Application {
 
         Scene scene = new Scene(mainView, 1280, 800);
 
-        primaryStage.setTitle("Grid Padel Tournament Generator");
+        primaryStage.setTitle("Generador de Torneos de Pádel");
         primaryStage.setScene(scene);
         primaryStage.setMinWidth(800);
         primaryStage.setMinHeight(600);

@@ -48,7 +48,7 @@ public class BracketPane extends Pane {
         container.setAlignment(Pos.TOP_CENTER);
         container.setMinWidth(600);
 
-        Label title = new Label("🏸 Grid Padel — Generador de Cuadros");
+        Label title = new Label("🏸 Generador de Cuadros");
         title.getStyleClass().add("welcome-title");
 
         if (tournaments.isEmpty()) {

@@ -55,7 +55,7 @@ public class MainView extends BorderPane {
             }
         });
 
-        titleLabel = new Label("Grid Padel — Generador de Cuadros");
+        titleLabel = new Label("");
         titleLabel.getStyleClass().add("toolbar-title");
 
         tournamentListBox = new VBox(4);
@@ -107,14 +107,14 @@ public class MainView extends BorderPane {
 
     public void clearDisplay() {
         bracketPane.getChildren().clear();
-        titleLabel.setText("Grid Padel — Generador de Cuadros");
+        titleLabel.setText("");
         if (controller != null) {
             controller.refreshTournamentList();
         }
     }
 
     public void updateTitle(String tournamentName) {
-        titleLabel.setText("Grid Padel — " + tournamentName);
+        titleLabel.setText(tournamentName);
     }
 
     public void updateTournamentList(List<Tournament> tournaments) {
