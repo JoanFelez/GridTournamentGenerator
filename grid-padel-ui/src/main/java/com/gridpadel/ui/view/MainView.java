@@ -202,6 +202,7 @@ public class MainView extends BorderPane {
         Button editBtn = createButton("✏️ Renombrar", e -> { if (controller != null) controller.editTournamentName(); });
         Button pairsBtn = createButton("👥 Parejas", e -> { if (controller != null) controller.managePairs(); });
         Button generateBtn = createButton("⚡ Generar", e -> { if (controller != null) controller.generateBracket(); });
+        Button pdfBtn = createButton("📄 Exportar PDF", e -> { if (controller != null) controller.exportPdf(); });
 
         Button resetZoomBtn = createButton("🔍 Zoom 1:1", e -> resetZoom());
 
@@ -214,7 +215,7 @@ public class MainView extends BorderPane {
         HBox toolbar = new HBox(8,
                 newBtn, saveBtn,
                 new Separator(javafx.geometry.Orientation.VERTICAL),
-                editBtn, pairsBtn, generateBtn,
+                editBtn, pairsBtn, generateBtn, pdfBtn,
                 new Separator(javafx.geometry.Orientation.VERTICAL),
                 resetZoomBtn,
                 spacer,
