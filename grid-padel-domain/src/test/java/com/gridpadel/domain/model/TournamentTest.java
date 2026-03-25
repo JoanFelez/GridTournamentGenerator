@@ -40,14 +40,14 @@ class TournamentTest {
     }
 
     @Test
-    void shouldEnforceMaximum32Pairs() {
+    void shouldEnforceMaximum64Pairs() {
         Tournament tournament = Tournament.create("Test");
-        for (int i = 0; i < 32; i++) {
+        for (int i = 0; i < 64; i++) {
             tournament.addPair(pair("P" + i + "a", "P" + i + "b"));
         }
         assertThatThrownBy(() -> tournament.addPair(pair("Extra1", "Extra2")))
                 .isInstanceOf(DomainException.class)
-                .hasMessageContaining("32");
+                .hasMessageContaining("64");
     }
 
     @Test
