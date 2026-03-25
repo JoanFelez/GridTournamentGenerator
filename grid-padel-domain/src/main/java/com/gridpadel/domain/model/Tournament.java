@@ -16,7 +16,7 @@ import java.util.Objects;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Tournament implements DomainEntity {
 
-    public static final int MAX_PAIRS = 32;
+    public static final int MAX_PAIRS = 64;
 
     @EqualsAndHashCode.Include
     private final TournamentId id;

@@ -1,6 +1,7 @@
 package com.gridpadel.ui.dialog;
 
 import com.gridpadel.domain.model.Pair;
+import com.gridpadel.domain.model.Tournament;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
@@ -22,7 +23,7 @@ public class PairManagementDialog {
                                                   Function<File, List<PairEntry>> importParser) {
         Dialog<List<PairEntry>> dialog = new Dialog<>();
         dialog.setTitle("Gestionar parejas");
-        dialog.setHeaderText("Añadir, editar o eliminar parejas (máx. 32)");
+        dialog.setHeaderText("Añadir, editar o eliminar parejas (máx. " + Tournament.MAX_PAIRS + ")");
 
         ButtonType saveButton = new ButtonType("Guardar", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(saveButton, ButtonType.CANCEL);
@@ -59,8 +60,8 @@ public class PairManagementDialog {
         Button importBtn = new Button("Importar CSV/XLS");
 
         addBtn.setOnAction(e -> {
-            if (listView.getItems().size() >= 32) {
-                showAlert("Se ha alcanzado el máximo de 32 parejas.");
+            if (listView.getItems().size() >= Tournament.MAX_PAIRS) {
+                showAlert("Se ha alcanzado el máximo de " + Tournament.MAX_PAIRS + " parejas.");
                 return;
             }
             PairDialog.showCreate().ifPresent(data ->
@@ -92,9 +93,9 @@ public class PairManagementDialog {
             if (file != null) {
                 try {
                     List<PairEntry> imported = importParser.apply(file);
-                    int remaining = 32 - listView.getItems().size();
+                    int remaining = Tournament.MAX_PAIRS - listView.getItems().size();
                     if (imported.size() > remaining) {
-                        showAlert("Solo se pueden añadir " + remaining + " pareja(s) más (máx. 32). "
+                        showAlert("Solo se pueden añadir " + remaining + " pareja(s) más (máx. " + Tournament.MAX_PAIRS + "). "
                                 + "Se importan las primeras " + remaining + " del archivo.");
                         imported = imported.subList(0, remaining);
                     }

@@ -148,10 +148,13 @@ public class BracketPane extends Pane {
             maxX = Math.max(maxX, pos.x() + BracketLayoutCalculator.MATCH_BOX_WIDTH);
             maxY = Math.max(maxY, pos.y() + BracketLayoutCalculator.MATCH_BOX_HEIGHT);
         }
-        setPrefWidth(maxX + BracketLayoutCalculator.PADDING);
-        setPrefHeight(maxY + BracketLayoutCalculator.PADDING);
-        setMinWidth(maxX + BracketLayoutCalculator.PADDING);
-        setMinHeight(maxY + BracketLayoutCalculator.PADDING);
+        double w = maxX + BracketLayoutCalculator.PADDING;
+        double h = maxY + BracketLayoutCalculator.PADDING;
+        setPrefWidth(w);
+        setPrefHeight(h);
+        setMinWidth(w);
+        setMinHeight(h);
+        resize(w, h);
     }
 
     private void showPairsSummary(Tournament tournament) {
