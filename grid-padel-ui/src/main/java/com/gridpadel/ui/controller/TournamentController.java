@@ -31,10 +31,44 @@ public class TournamentController {
     }
 
     public void createNewTournament() {
+        if (currentTournament != null) {
+            // Inside a tournament — offer to add a new category or create a new tournament
+            Alert choice = new Alert(Alert.AlertType.CONFIRMATION);
+            choice.setTitle("Nuevo cuadro");
+            choice.setHeaderText("¿Añadir categoría a '" + currentTournament.name() + "' o crear un torneo nuevo?");
+            ButtonType addCatBtn = new ButtonType("Añadir categoría");
+            ButtonType newTournBtn = new ButtonType("Nuevo torneo");
+            ButtonType cancelBtn = new ButtonType("Cancelar", ButtonType.CANCEL.getButtonData());
+            choice.getButtonTypes().setAll(addCatBtn, newTournBtn, cancelBtn);
+            choice.showAndWait().ifPresent(chosen -> {
+                if (chosen == addCatBtn) {
+                    createCategoryForCurrentTournament();
+                } else if (chosen == newTournBtn) {
+                    createBrandNewTournament();
+                }
+            });
+        } else {
+            createBrandNewTournament();
+        }
+    }
+
+    private void createCategoryForCurrentTournament() {
+        String tournamentName = currentTournament.name();
+        TournamentDialog.showAddCategory().ifPresent(data ->
+                Try.run(() -> {
+                    currentTournament = tournamentService.createTournament(tournamentName, data.category());
+                    mainView.updateTitle(displayTitle(currentTournament));
+                    refreshTournamentList();
+                    managePairs();
+                }).onFailure(e -> showError("Error al crear categoría", e.getMessage()))
+        );
+    }
+
+    private void createBrandNewTournament() {
         TournamentDialog.showCreate().ifPresent(data ->
                 Try.run(() -> {
-                    currentTournament = tournamentService.createTournament(data.name());
-                    mainView.updateTitle(currentTournament.name());
+                    currentTournament = tournamentService.createTournament(data.name(), data.category());
+                    mainView.updateTitle(displayTitle(currentTournament));
                     refreshTournamentList();
                     managePairs();
                 }).onFailure(e -> showError("Error al crear torneo", e.getMessage()))
@@ -43,14 +77,32 @@ public class TournamentController {
 
     public void editTournamentName() {
         if (currentTournament == null) return;
-        TournamentDialog.showEdit(currentTournament.name()).ifPresent(data ->
+        TournamentDialog.showEdit(currentTournament.name(), currentTournament.category()).ifPresent(data ->
                 Try.run(() -> {
                     tournamentService.updateTournamentName(currentTournament.id(), data.name());
+                    tournamentService.updateTournamentCategory(currentTournament.id(), data.category());
                     refreshTournament();
-                    mainView.updateTitle(currentTournament.name());
+                    mainView.updateTitle(displayTitle(currentTournament));
                     refreshTournamentList();
                 }).onFailure(e -> showError("Error al actualizar torneo", e.getMessage()))
         );
+    }
+
+    public void deleteCurrentTournament() {
+        if (currentTournament == null) return;
+        String displayName = displayTitle(currentTournament);
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
+                "¿Eliminar '" + displayName + "'? Esta acción no se puede deshacer.");
+        confirm.setTitle("Eliminar");
+        confirm.setHeaderText("Confirmar eliminación");
+        confirm.showAndWait().filter(b -> b == ButtonType.OK).ifPresent(b -> {
+            Try.run(() -> {
+                tournamentService.deleteTournament(currentTournament.id());
+                currentTournament = null;
+                mainView.clearDisplay();
+                refreshTournamentList();
+            }).onFailure(e -> showError("Error al eliminar", e.getMessage()));
+        });
     }
 
     public void managePairs() {
@@ -190,7 +242,7 @@ public class TournamentController {
 
     public void openTournament(Tournament tournament) {
         currentTournament = tournamentService.getTournament(tournament.id());
-        mainView.updateTitle(currentTournament.name());
+        mainView.updateTitle(displayTitle(currentTournament));
         refreshDisplay();
         refreshTournamentList();
     }
@@ -228,6 +280,43 @@ public class TournamentController {
                     });
                 })
                 .onFailure(e -> showError("Error al cargar torneos", e.getMessage()));
+    }
+
+    public void publishToGitHubPages() {
+        Try.run(() -> {
+            // Detect repo URL from git remote
+            String repoUrl = detectGitRemoteUrl();
+            if (repoUrl == null) {
+                showError("Sin repositorio", "No se detectó un repositorio Git con remote 'origin'.");
+                return;
+            }
+
+            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+            confirm.setTitle("Publicar en GitHub Pages");
+            confirm.setHeaderText("Se publicarán todos los torneos con cuadro generado.");
+            confirm.setContentText("URL: " + repoUrl + "\n¿Continuar?");
+            confirm.showAndWait().filter(b -> b == ButtonType.OK).ifPresent(b -> {
+                Try.of(() -> {
+                    String url = tournamentService.publishToGitHubPages(repoUrl);
+                    showInfo("Publicado", "Cuadros publicados correctamente.\n\n" + url);
+                    return url;
+                }).onFailure(e -> showError("Error al publicar", e.getMessage()));
+            });
+        }).onFailure(e -> showError("Error", e.getMessage()));
+    }
+
+    private String detectGitRemoteUrl() {
+        try {
+            ProcessBuilder pb = new ProcessBuilder("git", "remote", "get-url", "origin")
+                    .directory(new java.io.File(System.getProperty("user.dir")))
+                    .redirectErrorStream(true);
+            Process process = pb.start();
+            String url = new String(process.getInputStream().readAllBytes()).trim();
+            int exitCode = process.waitFor();
+            return exitCode == 0 && !url.isEmpty() ? url : null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public void exportPdf() {
@@ -297,6 +386,13 @@ public class TournamentController {
         if (mainView != null && currentTournament != null) {
             mainView.displayTournament(currentTournament);
         }
+    }
+
+    private String displayTitle(Tournament t) {
+        if (t.category() != null && !t.category().isBlank()) {
+            return t.name() + " — " + t.category();
+        }
+        return t.name();
     }
 
     private String buildMatchHeader(Match match) {

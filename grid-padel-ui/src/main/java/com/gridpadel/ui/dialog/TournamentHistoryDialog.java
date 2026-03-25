@@ -34,7 +34,9 @@ public class TournamentHistoryDialog {
                 if (empty || item == null) {
                     setText(null);
                 } else {
-                    setText(item.name() + "  (" + item.pairCount() + " parejas)  —  " +
+                    String catPrefix = item.category() != null && !item.category().isBlank()
+                            ? "[" + item.category() + "] " : "";
+                    setText(catPrefix + item.name() + "  (" + item.pairCount() + " parejas)  —  " +
                             item.updatedAt().format(FMT));
                 }
             }

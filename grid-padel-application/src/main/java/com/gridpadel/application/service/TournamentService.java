@@ -5,6 +5,7 @@ import com.gridpadel.domain.model.Pair;
 import com.gridpadel.domain.model.Tournament;
 import com.gridpadel.domain.model.vo.*;
 import com.gridpadel.domain.port.BracketExportPort;
+import com.gridpadel.domain.port.BracketPublishPort;
 import com.gridpadel.domain.port.PairImportPort;
 import com.gridpadel.domain.port.PairImportPort.ImportedPair;
 import com.gridpadel.domain.repository.TournamentRepository;
@@ -30,9 +31,14 @@ public class TournamentService implements ApplicationService {
     private final BracketEditService bracketEditService;
     private final java.util.List<PairImportPort> importers;
     private final BracketExportPort bracketExportPort;
+    private final BracketPublishPort bracketPublishPort;
 
     public Tournament createTournament(String name) {
-        Tournament tournament = Tournament.create(name);
+        return createTournament(name, "");
+    }
+
+    public Tournament createTournament(String name, String category) {
+        Tournament tournament = Tournament.create(name, category);
         repository.save(tournament);
         return tournament;
     }
@@ -105,6 +111,12 @@ public class TournamentService implements ApplicationService {
         repository.save(tournament);
     }
 
+    public void updateTournamentCategory(TournamentId tournamentId, String category) {
+        Tournament tournament = getTournament(tournamentId);
+        tournament.updateCategory(category);
+        repository.save(tournament);
+    }
+
     public void deleteTournament(TournamentId id) {
         repository.delete(id);
     }
@@ -135,6 +147,11 @@ public class TournamentService implements ApplicationService {
     public void exportToPdf(TournamentId tournamentId, OutputStream outputStream) {
         Tournament tournament = getTournament(tournamentId);
         bracketExportPort.exportToPdf(tournament, outputStream);
+    }
+
+    public String publishToGitHubPages(String repoUrl) {
+        java.util.List<Tournament> tournaments = List.ofAll(repository.findAll()).toJavaList();
+        return bracketPublishPort.publish(tournaments, repoUrl);
     }
 
     private Match findMatch(Tournament tournament, MatchId matchId) {

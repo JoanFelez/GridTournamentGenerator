@@ -59,16 +59,49 @@ public class BracketPane extends Pane {
             Label subtitle = new Label("Selecciona un torneo para abrir:");
             subtitle.getStyleClass().add("welcome-subtitle");
 
-            FlowPane grid = new FlowPane(16, 16);
-            grid.setAlignment(Pos.CENTER);
-            grid.setPadding(new Insets(10, 0, 0, 0));
-
+            // Group tournaments by name
+            java.util.LinkedHashMap<String, java.util.List<Tournament>> byName = new java.util.LinkedHashMap<>();
             for (Tournament t : tournaments) {
-                VBox card = createTournamentCard(t);
-                grid.getChildren().add(card);
+                byName.computeIfAbsent(t.name(), k -> new java.util.ArrayList<>()).add(t);
             }
 
-            container.getChildren().addAll(title, subtitle, grid);
+            VBox tournamentGroups = new VBox(24);
+            tournamentGroups.setAlignment(Pos.TOP_CENTER);
+
+            for (var entry : byName.entrySet()) {
+                java.util.List<Tournament> group = entry.getValue();
+                boolean hasCategories = group.stream()
+                        .anyMatch(t -> t.category() != null && !t.category().isBlank());
+
+                if (hasCategories && group.size() > 1) {
+                    // Tournament group header + category cards
+                    Label groupHeader = new Label("🏆 " + entry.getKey());
+                    groupHeader.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1565c0;");
+
+                    FlowPane categoryGrid = new FlowPane(12, 12);
+                    categoryGrid.setAlignment(Pos.CENTER);
+                    for (Tournament t : group) {
+                        VBox card = createCategoryCard(t);
+                        categoryGrid.getChildren().add(card);
+                    }
+
+                    VBox groupBox = new VBox(10, groupHeader, categoryGrid);
+                    groupBox.setAlignment(Pos.TOP_CENTER);
+                    groupBox.setStyle("-fx-padding: 12; -fx-background-color: #f0f4ff; -fx-background-radius: 8;");
+                    tournamentGroups.getChildren().add(groupBox);
+                } else {
+                    // Single tournament — show flat cards
+                    FlowPane grid = new FlowPane(16, 16);
+                    grid.setAlignment(Pos.CENTER);
+                    for (Tournament t : group) {
+                        VBox card = createTournamentCard(t);
+                        grid.getChildren().add(card);
+                    }
+                    tournamentGroups.getChildren().add(grid);
+                }
+            }
+
+            container.getChildren().addAll(title, subtitle, tournamentGroups);
         }
 
         container.setLayoutX(0);
@@ -77,7 +110,11 @@ public class BracketPane extends Pane {
     }
 
     private VBox createTournamentCard(Tournament tournament) {
-        Label name = new Label(tournament.name());
+        String displayName = tournament.name();
+        if (tournament.category() != null && !tournament.category().isBlank()) {
+            displayName += " — " + tournament.category();
+        }
+        Label name = new Label(displayName);
         name.getStyleClass().add("welcome-card-name");
 
         String pairsText = tournament.pairCount() + " pareja" + (tournament.pairCount() != 1 ? "s" : "");
@@ -94,6 +131,36 @@ public class BracketPane extends Pane {
         card.getStyleClass().add("welcome-card");
         card.setPrefWidth(220);
         card.setPadding(new Insets(16));
+
+        card.setOnMouseClicked(e -> {
+            if (tournamentSelectHandler != null) {
+                tournamentSelectHandler.accept(tournament);
+            }
+        });
+
+        return card;
+    }
+
+    private VBox createCategoryCard(Tournament tournament) {
+        String categoryName = tournament.category() != null && !tournament.category().isBlank()
+                ? tournament.category() : "(sin categoría)";
+        Label name = new Label(categoryName);
+        name.getStyleClass().add("welcome-card-name");
+
+        String pairsText = tournament.pairCount() + " pareja" + (tournament.pairCount() != 1 ? "s" : "");
+        boolean hasBracket = !tournament.mainBracket().rounds().isEmpty();
+        String statusText = hasBracket ? "📊 Cuadro generado" : "📝 Borrador";
+
+        Label pairs = new Label("👥 " + pairsText);
+        pairs.getStyleClass().add("welcome-card-detail");
+
+        Label status = new Label(statusText);
+        status.getStyleClass().add("welcome-card-detail");
+
+        VBox card = new VBox(6, name, pairs, status);
+        card.getStyleClass().add("welcome-card");
+        card.setPrefWidth(180);
+        card.setPadding(new Insets(12));
 
         card.setOnMouseClicked(e -> {
             if (tournamentSelectHandler != null) {

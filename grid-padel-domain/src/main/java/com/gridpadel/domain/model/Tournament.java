@@ -21,17 +21,19 @@ public class Tournament implements DomainEntity {
     @EqualsAndHashCode.Include
     private final TournamentId id;
     private String name;
+    private String category;
     private List<Pair> pairs;
     private final Bracket mainBracket;
     private final Bracket consolationBracket;
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    private Tournament(TournamentId id, String name, List<Pair> pairs,
+    private Tournament(TournamentId id, String name, String category, List<Pair> pairs,
                        Bracket mainBracket, Bracket consolationBracket,
                        LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = Objects.requireNonNull(id);
         this.name = Objects.requireNonNull(name);
+        this.category = category != null ? category.trim() : "";
         this.pairs = pairs;
         this.mainBracket = Objects.requireNonNull(mainBracket);
         this.consolationBracket = Objects.requireNonNull(consolationBracket);
@@ -40,6 +42,10 @@ public class Tournament implements DomainEntity {
     }
 
     public static Tournament create(String name) {
+        return create(name, "");
+    }
+
+    public static Tournament create(String name, String category) {
         if (name == null || name.isBlank()) {
             throw new ValidationException("Tournament name cannot be blank", "name");
         }
@@ -47,6 +53,7 @@ public class Tournament implements DomainEntity {
         return new Tournament(
                 TournamentId.generate(),
                 name.trim(),
+                category,
                 List.empty(),
                 Bracket.create(BracketType.MAIN),
                 Bracket.create(BracketType.CONSOLATION),
@@ -55,10 +62,11 @@ public class Tournament implements DomainEntity {
         );
     }
 
-    public static Tournament restore(TournamentId id, String name, java.util.List<Pair> pairs,
+    public static Tournament restore(TournamentId id, String name, String category,
+                                      java.util.List<Pair> pairs,
                                       Bracket mainBracket, Bracket consolationBracket,
                                       LocalDateTime createdAt, LocalDateTime updatedAt) {
-        return new Tournament(id, name, List.ofAll(pairs), mainBracket, consolationBracket, createdAt, updatedAt);
+        return new Tournament(id, name, category, List.ofAll(pairs), mainBracket, consolationBracket, createdAt, updatedAt);
     }
 
     public int pairCount() {
@@ -70,6 +78,11 @@ public class Tournament implements DomainEntity {
             throw new ValidationException("Tournament name cannot be blank", "name");
         }
         this.name = newName.trim();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void updateCategory(String newCategory) {
+        this.category = newCategory != null ? newCategory.trim() : "";
         this.updatedAt = LocalDateTime.now();
     }
 

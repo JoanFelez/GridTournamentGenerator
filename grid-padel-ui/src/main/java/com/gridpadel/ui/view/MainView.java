@@ -126,21 +126,66 @@ public class MainView extends BorderPane {
             tournamentListBox.getChildren().add(empty);
         } else {
             Tournament current = controller != null ? controller.currentTournament() : null;
+
+            // Group by tournament name, with categories as sub-items
+            java.util.LinkedHashMap<String, java.util.List<Tournament>> byName = new java.util.LinkedHashMap<>();
             for (Tournament t : tournaments) {
-                Label item = new Label(t.name());
-                item.getStyleClass().add("sidebar-item");
-                item.setMaxWidth(Double.MAX_VALUE);
-                if (current != null && current.id().equals(t.id())) {
-                    item.getStyleClass().add("sidebar-item-active");
+                byName.computeIfAbsent(t.name(), k -> new java.util.ArrayList<>()).add(t);
+            }
+
+            for (var entry : byName.entrySet()) {
+                java.util.List<Tournament> group = entry.getValue();
+                boolean hasCategories = group.stream()
+                        .anyMatch(t -> t.category() != null && !t.category().isBlank());
+
+                if (hasCategories && group.size() > 1) {
+                    // Tournament header
+                    Label header = new Label("🏆 " + entry.getKey());
+                    header.getStyleClass().add("sidebar-category");
+                    header.setMaxWidth(Double.MAX_VALUE);
+                    header.setStyle("-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-fill: #1565c0; -fx-padding: 6 0 2 4;");
+                    tournamentListBox.getChildren().add(header);
+
+                    for (Tournament t : group) {
+                        String label = t.category() != null && !t.category().isBlank()
+                                ? t.category() : "(sin categoría)";
+                        Label item = new Label(label);
+                        item.getStyleClass().add("sidebar-item");
+                        item.setMaxWidth(Double.MAX_VALUE);
+                        item.setStyle(item.getStyle() + "-fx-padding: 4 4 4 16;");
+                        if (current != null && current.id().equals(t.id())) {
+                            item.getStyleClass().add("sidebar-item-active");
+                        }
+                        String pairInfo = t.pairCount() + " parejas";
+                        if (!t.mainBracket().rounds().isEmpty()) pairInfo += " • cuadro";
+                        item.setTooltip(new Tooltip(pairInfo));
+                        item.setOnMouseClicked(e -> {
+                            if (controller != null) controller.openTournament(t);
+                        });
+                        tournamentListBox.getChildren().add(item);
+                    }
+                } else {
+                    // Single tournament or no categories — show flat
+                    for (Tournament t : group) {
+                        String label = t.name();
+                        if (t.category() != null && !t.category().isBlank()) {
+                            label += " — " + t.category();
+                        }
+                        Label item = new Label(label);
+                        item.getStyleClass().add("sidebar-item");
+                        item.setMaxWidth(Double.MAX_VALUE);
+                        if (current != null && current.id().equals(t.id())) {
+                            item.getStyleClass().add("sidebar-item-active");
+                        }
+                        String pairInfo = t.pairCount() + " parejas";
+                        if (!t.mainBracket().rounds().isEmpty()) pairInfo += " • cuadro";
+                        item.setTooltip(new Tooltip(pairInfo));
+                        item.setOnMouseClicked(e -> {
+                            if (controller != null) controller.openTournament(t);
+                        });
+                        tournamentListBox.getChildren().add(item);
+                    }
                 }
-                String pairInfo = t.pairCount() + " parejas";
-                boolean hasBracket = !t.mainBracket().rounds().isEmpty();
-                if (hasBracket) pairInfo += " • cuadro";
-                item.setTooltip(new Tooltip(pairInfo));
-                item.setOnMouseClicked(e -> {
-                    if (controller != null) controller.openTournament(t);
-                });
-                tournamentListBox.getChildren().add(item);
             }
         }
 
@@ -200,8 +245,10 @@ public class MainView extends BorderPane {
         Button newBtn = createButton("🆕 Nuevo", e -> { if (controller != null) controller.createNewTournament(); });
         Button saveBtn = createButton("💾 Guardar", e -> { if (controller != null) controller.saveTournament(); });
         Button editBtn = createButton("✏️ Renombrar", e -> { if (controller != null) controller.editTournamentName(); });
+        Button deleteBtn = createButton("🗑 Eliminar", e -> { if (controller != null) controller.deleteCurrentTournament(); });
         Button pairsBtn = createButton("👥 Parejas", e -> { if (controller != null) controller.managePairs(); });
         Button generateBtn = createButton("⚡ Generar", e -> { if (controller != null) controller.generateBracket(); });
+        Button publishBtn = createButton("📤 Publicar", e -> { if (controller != null) controller.publishToGitHubPages(); });
         Button pdfBtn = createButton("📄 Exportar PDF", e -> { if (controller != null) controller.exportPdf(); });
 
         Button resetZoomBtn = createButton("🔍 Zoom 1:1", e -> resetZoom());
@@ -215,7 +262,7 @@ public class MainView extends BorderPane {
         HBox toolbar = new HBox(8,
                 newBtn, saveBtn,
                 new Separator(javafx.geometry.Orientation.VERTICAL),
-                editBtn, pairsBtn, generateBtn, pdfBtn,
+                editBtn, deleteBtn, pairsBtn, generateBtn, pdfBtn, publishBtn,
                 new Separator(javafx.geometry.Orientation.VERTICAL),
                 resetZoomBtn,
                 spacer,

@@ -29,6 +29,7 @@ public class TournamentDtoMapper {
         return new TournamentDto(
                 tournament.id().value(),
                 tournament.name(),
+                tournament.category(),
                 tournament.pairs().map(pairDtoMapper::toDto).toJavaList(),
                 bracketDtoMapper.toDto(tournament.mainBracket()),
                 bracketDtoMapper.toDto(tournament.consolationBracket()),
@@ -50,6 +51,7 @@ public class TournamentDtoMapper {
         return Tournament.restore(
                 TournamentId.of(dto.id()),
                 dto.name(),
+                dto.category(),
                 pairs,
                 mainBracket,
                 consolationBracket,

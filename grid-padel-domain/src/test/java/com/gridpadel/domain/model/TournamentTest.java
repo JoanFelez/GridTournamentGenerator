@@ -106,9 +106,10 @@ class TournamentTest {
         LocalDateTime created = LocalDateTime.of(2026, 1, 1, 0, 0);
         LocalDateTime updated = LocalDateTime.of(2026, 3, 1, 0, 0);
 
-        Tournament tournament = Tournament.restore(id, "Restored", pairs, main, consolation, created, updated);
+        Tournament tournament = Tournament.restore(id, "Restored", "Test Category", pairs, main, consolation, created, updated);
         assertThat(tournament.id()).isEqualTo(id);
         assertThat(tournament.name()).isEqualTo("Restored");
+        assertThat(tournament.category()).isEqualTo("Test Category");
         assertThat(tournament.pairs()).hasSize(1);
         assertThat(tournament.createdAt()).isEqualTo(created);
         assertThat(tournament.updatedAt()).isEqualTo(updated);
