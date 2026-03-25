@@ -39,14 +39,33 @@ public class BracketPane extends Pane {
         this.tournamentSelectHandler = handler;
     }
 
+    public void showPlaceholder() {
+        getChildren().clear();
+        matchBoxes = HashMap.empty();
+
+        VBox container = new VBox(12);
+        container.setPadding(new Insets(60));
+        container.setAlignment(Pos.CENTER);
+
+        Label icon = new Label("🏸");
+        icon.setStyle("-fx-font-size: 48px;");
+
+        Label msg = new Label("Selecciona un torneo en el panel izquierdo");
+        msg.setStyle("-fx-font-size: 14px; -fx-text-fill: #999;");
+
+        container.getChildren().addAll(icon, msg);
+        container.setLayoutX(0);
+        container.setLayoutY(0);
+        getChildren().add(container);
+    }
+
     public void showWelcomeView(List<Tournament> tournaments) {
         getChildren().clear();
         matchBoxes = HashMap.empty();
 
         VBox container = new VBox(20);
-        container.setPadding(new Insets(40));
-        container.setAlignment(Pos.TOP_CENTER);
-        container.setMinWidth(600);
+        container.setPadding(new Insets(30));
+        container.setAlignment(Pos.TOP_LEFT);
 
         Label title = new Label("🏸 Generador de Cuadros");
         title.getStyleClass().add("welcome-title");
@@ -65,47 +84,75 @@ public class BracketPane extends Pane {
                 byName.computeIfAbsent(t.name(), k -> new java.util.ArrayList<>()).add(t);
             }
 
-            VBox tournamentGroups = new VBox(24);
-            tournamentGroups.setAlignment(Pos.TOP_CENTER);
-
+            // Lay out tournament groups in columns of max 4
+            java.util.List<javafx.scene.Node> groupNodes = new java.util.ArrayList<>();
             for (var entry : byName.entrySet()) {
                 java.util.List<Tournament> group = entry.getValue();
                 boolean hasCategories = group.stream()
                         .anyMatch(t -> t.category() != null && !t.category().isBlank());
 
                 if (hasCategories && group.size() > 1) {
-                    // Tournament group header + category cards
                     Label groupHeader = new Label("🏆 " + entry.getKey());
-                    groupHeader.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1565c0;");
+                    groupHeader.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1565c0;");
 
-                    FlowPane categoryGrid = new FlowPane(12, 12);
-                    categoryGrid.setAlignment(Pos.CENTER);
+                    FlowPane categoryGrid = new FlowPane(8, 8);
+                    categoryGrid.setAlignment(Pos.TOP_LEFT);
+                    categoryGrid.setPrefWrapLength(370);
                     for (Tournament t : group) {
                         VBox card = createCategoryCard(t);
                         categoryGrid.getChildren().add(card);
                     }
 
-                    VBox groupBox = new VBox(10, groupHeader, categoryGrid);
-                    groupBox.setAlignment(Pos.TOP_CENTER);
-                    groupBox.setStyle("-fx-padding: 12; -fx-background-color: #f0f4ff; -fx-background-radius: 8;");
-                    tournamentGroups.getChildren().add(groupBox);
+                    VBox groupBox = new VBox(8, groupHeader, categoryGrid);
+                    groupBox.setAlignment(Pos.TOP_LEFT);
+                    groupBox.setStyle("-fx-padding: 10; -fx-background-color: #f0f4ff; -fx-background-radius: 8;");
+                    groupBox.setPrefWidth(390);
+                    groupBox.setMaxWidth(390);
+                    groupNodes.add(groupBox);
                 } else {
-                    // Single tournament — show flat cards
-                    FlowPane grid = new FlowPane(16, 16);
-                    grid.setAlignment(Pos.CENTER);
                     for (Tournament t : group) {
                         VBox card = createTournamentCard(t);
-                        grid.getChildren().add(card);
+                        groupNodes.add(card);
                     }
-                    tournamentGroups.getChildren().add(grid);
                 }
             }
 
-            container.getChildren().addAll(title, subtitle, tournamentGroups);
+            // Arrange in columns: max 4 groups per column, laid out left to right
+            javafx.scene.layout.HBox columns = new javafx.scene.layout.HBox(20);
+            columns.setAlignment(Pos.TOP_LEFT);
+            VBox currentColumn = new VBox(12);
+            currentColumn.setAlignment(Pos.TOP_LEFT);
+            int count = 0;
+            for (javafx.scene.Node node : groupNodes) {
+                if (count > 0 && count % 4 == 0) {
+                    columns.getChildren().add(currentColumn);
+                    currentColumn = new VBox(12);
+                    currentColumn.setAlignment(Pos.TOP_LEFT);
+                }
+                currentColumn.getChildren().add(node);
+                count++;
+            }
+            if (!currentColumn.getChildren().isEmpty()) {
+                columns.getChildren().add(currentColumn);
+            }
+
+            container.getChildren().addAll(title, subtitle, columns);
         }
 
         container.setLayoutX(0);
         container.setLayoutY(0);
+
+        // Size the pane to fit the content
+        container.applyCss();
+        container.layout();
+        double w = Math.max(800, container.prefWidth(-1));
+        double h = Math.max(600, container.prefHeight(-1));
+        setPrefWidth(w);
+        setPrefHeight(h);
+        setMinWidth(w);
+        setMinHeight(h);
+        resize(w, h);
+
         getChildren().add(container);
     }
 
