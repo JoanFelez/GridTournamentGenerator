@@ -33,7 +33,6 @@ public class MatchAdvancementService {
 
         if (match.bracketType() == BracketType.MAIN && match.roundNumber() == 2) {
             routeByeAdvancedLoserToConsolation(tournament, match, loser);
-            routeWalkoverAdvancedLoserToConsolation(tournament, match, loser);
         }
     }
 
@@ -57,7 +56,6 @@ public class MatchAdvancementService {
 
         if (match.bracketType() == BracketType.MAIN && match.roundNumber() == 2 && previousLoser != null) {
             removeByeAdvancedLoserFromConsolation(tournament, match, previousLoser);
-            removeWalkoverAdvancedLoserFromConsolation(tournament, match, previousLoser);
         }
     }
 
@@ -160,37 +158,6 @@ public class MatchAdvancementService {
         });
     }
 
-    /**
-     * When a pair advanced via W.O. in R1 and loses in R2, route them
-     * to the consolation slot that was left empty (W.O. loser was eliminated).
-     */
-    private void routeWalkoverAdvancedLoserToConsolation(Tournament tournament, Match match, Pair loser) {
-        Bracket main = tournament.mainBracket();
-        Round r1 = main.round(1).getOrElseThrow(() ->
-                new IllegalStateException("Main R1 should exist"));
-
-        int r1Position = loser.equals(match.pair1())
-                ? match.position() * 2
-                : match.position() * 2 + 1;
-
-        if (r1Position >= r1.matches().size()) return;
-
-        Match r1Match = r1.matchAt(r1Position);
-        if (!r1Match.isWalkover()) return;
-
-        Bracket consolation = tournament.consolationBracket();
-        consolation.round(1).forEach(cr1 -> {
-            int consolationPosition = r1Position / 2;
-            Match consolationMatch = cr1.matchAt(consolationPosition);
-
-            if (r1Position % 2 == 0) {
-                consolationMatch.setPair1(loser);
-            } else {
-                consolationMatch.setPair2(loser);
-            }
-        });
-    }
-
     private void removeByeAdvancedLoserFromConsolation(Tournament tournament, Match match, Pair loser) {
         Bracket main = tournament.mainBracket();
         Round r1 = main.round(1).getOrElseThrow(() ->
@@ -204,33 +171,6 @@ public class MatchAdvancementService {
 
         Match r1Match = r1.matchAt(r1Position);
         if (!r1Match.isByeMatch()) return;
-
-        Bracket consolation = tournament.consolationBracket();
-        consolation.round(1).forEach(cr1 -> {
-            int consolationPosition = r1Position / 2;
-            Match consolationMatch = cr1.matchAt(consolationPosition);
-
-            if (r1Position % 2 == 0) {
-                consolationMatch.setPair1(null);
-            } else {
-                consolationMatch.setPair2(null);
-            }
-        });
-    }
-
-    private void removeWalkoverAdvancedLoserFromConsolation(Tournament tournament, Match match, Pair loser) {
-        Bracket main = tournament.mainBracket();
-        Round r1 = main.round(1).getOrElseThrow(() ->
-                new IllegalStateException("Main R1 should exist"));
-
-        int r1Position = loser.equals(match.pair1())
-                ? match.position() * 2
-                : match.position() * 2 + 1;
-
-        if (r1Position >= r1.matches().size()) return;
-
-        Match r1Match = r1.matchAt(r1Position);
-        if (!r1Match.isWalkover()) return;
 
         Bracket consolation = tournament.consolationBracket();
         consolation.round(1).forEach(cr1 -> {

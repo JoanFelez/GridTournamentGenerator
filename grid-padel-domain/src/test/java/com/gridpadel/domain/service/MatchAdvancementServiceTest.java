@@ -394,7 +394,7 @@ class MatchAdvancementServiceTest {
     }
 
     @Test
-    void shouldRouteWalkoverWinnerToConsolationWhenTheyLoseInR2() {
+    void shouldNotRouteWalkoverWinnerToConsolationWhenTheyLoseInR2() {
         Tournament t = tournamentWith4Pairs();
         Round r1 = t.mainBracket().rounds().get(0);
 
@@ -411,34 +411,10 @@ class MatchAdvancementServiceTest {
         Match r2m0 = t.mainBracket().rounds().get(1).matchAt(0);
         advancementService.processMatchResult(t, r2m0.id(), pair2WinsResult());
 
-        // W.O. winner should be routed to consolation (W.O. doesn't count as match played)
+        // W.O. counts as match played — winner should NOT go to consolation
         Match consolationM0 = t.consolationBracket().rounds().get(0).matchAt(0);
         assertThat(pairIsInMatch(consolationM0, woWinner))
-                .as("W.O. winner who loses in R2 should go to consolation")
-                .isTrue();
-    }
-
-    @Test
-    void shouldClearWalkoverConsolationRoutingOnResultClear() {
-        Tournament t = tournamentWith4Pairs();
-        Round r1 = t.mainBracket().rounds().get(0);
-
-        Match r1m0 = r1.matchAt(0);
-        Pair woWinner = r1m0.pair1();
-        advancementService.processMatchResult(t, r1m0.id(), MatchResult.walkover(2));
-
-        Match r1m1 = r1.matchAt(1);
-        advancementService.processMatchResult(t, r1m1.id(), pair1WinsResult());
-
-        Match r2m0 = t.mainBracket().rounds().get(1).matchAt(0);
-        advancementService.processMatchResult(t, r2m0.id(), pair2WinsResult());
-
-        // Clear R2 result
-        advancementService.clearMatchResult(t, r2m0.id());
-
-        Match consolationM0 = t.consolationBracket().rounds().get(0).matchAt(0);
-        assertThat(pairIsInMatch(consolationM0, woWinner))
-                .as("Consolation slot should be cleared when R2 result is cleared")
+                .as("W.O. winner who loses in R2 should NOT go to consolation (W.O. counts as match played)")
                 .isFalse();
     }
 
