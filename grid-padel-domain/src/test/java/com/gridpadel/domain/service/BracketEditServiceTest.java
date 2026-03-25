@@ -99,7 +99,6 @@ class BracketEditServiceTest {
 
         Match byeMatch = r1.matches().filter(Match::isByeMatch).head();
         Pair byePair = byeMatch.pair2().isBye() ? byeMatch.pair2() : byeMatch.pair1();
-        Pair realPairInByeMatch = byeMatch.pair1().isBye() ? byeMatch.pair2() : byeMatch.pair1();
         Match normalMatch = r1.matches().filter(m -> !m.isByeMatch()).head();
         Pair targetPair = normalMatch.pair1();
         Pair targetPartner = normalMatch.pair2();

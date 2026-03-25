@@ -146,7 +146,6 @@ public class PdfBracketExporter implements BracketExportPort {
         boolean pair2Winner = isWinner(match, false);
 
         float textX = x + 6;
-        float nameWidth = BOX_W - 12;
 
         // Pair 1
         cb.beginText();

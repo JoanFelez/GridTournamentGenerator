@@ -123,10 +123,4 @@ public class MatchResultDialog {
                 })
                 .orElse(null);
     }
-
-    private static String buildHeaderText(Match match) {
-        String p1 = match.pair1() != null ? match.pair1().displayName() : "TBD";
-        String p2 = match.pair2() != null ? match.pair2().displayName() : "TBD";
-        return p1 + "  vs  " + p2;
-    }
 }

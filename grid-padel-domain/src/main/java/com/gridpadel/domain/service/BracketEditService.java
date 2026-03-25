@@ -3,7 +3,6 @@ package com.gridpadel.domain.service;
 import com.gridpadel.domain.exception.InvalidOperationException;
 import com.gridpadel.domain.exception.ValidationException;
 import com.gridpadel.domain.model.*;
-import com.gridpadel.domain.model.vo.BracketType;
 import com.gridpadel.domain.model.vo.PairId;
 import io.vavr.collection.HashSet;
 import io.vavr.collection.List;

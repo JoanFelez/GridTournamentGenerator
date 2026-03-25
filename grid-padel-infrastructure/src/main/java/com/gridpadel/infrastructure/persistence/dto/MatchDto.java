@@ -1,6 +1,5 @@
 package com.gridpadel.infrastructure.persistence.dto;
 
-import java.util.List;
 
 public record MatchDto(
         String id,

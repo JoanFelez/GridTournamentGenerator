@@ -2,7 +2,6 @@ package com.gridpadel.ui.controller;
 
 import com.gridpadel.application.service.TournamentService;
 import com.gridpadel.domain.model.Match;
-import com.gridpadel.domain.model.Pair;
 import com.gridpadel.domain.model.Tournament;
 import com.gridpadel.ui.dialog.*;
 import com.gridpadel.ui.view.MainView;

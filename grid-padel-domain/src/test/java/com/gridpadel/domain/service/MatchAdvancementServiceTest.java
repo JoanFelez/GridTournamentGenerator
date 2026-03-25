@@ -5,8 +5,6 @@ import com.gridpadel.domain.model.vo.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.*;
 
 class MatchAdvancementServiceTest {
@@ -23,15 +21,6 @@ class MatchAdvancementServiceTest {
     private Tournament tournamentWith4Pairs() {
         Tournament t = Tournament.create("Test");
         for (int i = 1; i <= 4; i++) {
-            t.addPair(Pair.create(PlayerName.of("P" + i + "a"), PlayerName.of("P" + i + "b")));
-        }
-        bracketService.generateMainBracket(t);
-        return t;
-    }
-
-    private Tournament tournamentWith8Pairs() {
-        Tournament t = Tournament.create("Test");
-        for (int i = 1; i <= 8; i++) {
             t.addPair(Pair.create(PlayerName.of("P" + i + "a"), PlayerName.of("P" + i + "b")));
         }
         bracketService.generateMainBracket(t);
@@ -127,8 +116,6 @@ class MatchAdvancementServiceTest {
         Tournament t = tournamentWith4Pairs();
         Match r1m0 = t.mainBracket().rounds().get(0).matchAt(0);
         Match r1m1 = t.mainBracket().rounds().get(0).matchAt(1);
-        Pair loser1 = r1m0.pair2(); // will lose R1
-        Pair loser2 = r1m1.pair2(); // will lose R1
 
         // Both lose R1 → go to consolation
         advancementService.processMatchResult(t, r1m0.id(), pair1WinsResult());
