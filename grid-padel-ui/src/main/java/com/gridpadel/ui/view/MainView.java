@@ -38,16 +38,20 @@ public class MainView extends BorderPane {
 
         ScrollPane scrollPane = new ScrollPane(zoomGroup);
         this.bracketScrollPane = scrollPane;
-        scrollPane.setPannable(true);
+        scrollPane.setPannable(false);
         scrollPane.setFitToWidth(false);
         scrollPane.setFitToHeight(false);
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         scrollPane.getStyleClass().add("bracket-scroll");
 
         scrollPane.addEventFilter(ScrollEvent.SCROLL, event -> {
+            event.consume();
             if (event.isControlDown()) {
-                event.consume();
-                double delta = event.getDeltaY() > 0 ? ZOOM_STEP : -ZOOM_STEP;
+                double delta = event.getDeltaY() * 0.005;
                 zoom(delta);
+            } else {
+                manualScroll(scrollPane, event.getDeltaX(), event.getDeltaY());
             }
         });
 
@@ -81,7 +85,7 @@ public class MainView extends BorderPane {
         if (tournament.mainBracket().rounds().isEmpty()) return;
 
         javafx.application.Platform.runLater(() -> {
-            double contentWidth = zoomGroup.getBoundsInLocal().getWidth() * currentZoom;
+            double contentWidth = zoomGroup.getBoundsInParent().getWidth();
             double viewportWidth = bracketScrollPane.getViewportBounds().getWidth();
 
             if (contentWidth <= viewportWidth) return;
@@ -152,6 +156,22 @@ public class MainView extends BorderPane {
         scaleTransform.setY(currentZoom);
     }
 
+    private void manualScroll(ScrollPane sp, double deltaX, double deltaY) {
+        double scaledW = bracketPane.getWidth() * currentZoom;
+        double scaledH = bracketPane.getHeight() * currentZoom;
+        double vpW = sp.getViewportBounds().getWidth();
+        double vpH = sp.getViewportBounds().getHeight();
+
+        if (scaledH > vpH && deltaY != 0) {
+            double vStep = deltaY / (scaledH - vpH);
+            sp.setVvalue(Math.max(0, Math.min(1, sp.getVvalue() - vStep)));
+        }
+        if (scaledW > vpW && deltaX != 0) {
+            double hStep = deltaX / (scaledW - vpW);
+            sp.setHvalue(Math.max(0, Math.min(1, sp.getHvalue() - hStep)));
+        }
+    }
+
     public void resetZoom() {
         currentZoom = 1.0;
         scaleTransform.setX(1.0);
@@ -183,6 +203,8 @@ public class MainView extends BorderPane {
         Button pairsBtn = createButton("👥 Parejas", e -> { if (controller != null) controller.managePairs(); });
         Button generateBtn = createButton("⚡ Generar", e -> { if (controller != null) controller.generateBracket(); });
 
+        Button resetZoomBtn = createButton("🔍 Zoom 1:1", e -> resetZoom());
+
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
@@ -193,6 +215,8 @@ public class MainView extends BorderPane {
                 newBtn, saveBtn,
                 new Separator(javafx.geometry.Orientation.VERTICAL),
                 editBtn, pairsBtn, generateBtn,
+                new Separator(javafx.geometry.Orientation.VERTICAL),
+                resetZoomBtn,
                 spacer,
                 titleLabel,
                 spacer(10),
